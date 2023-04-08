@@ -18,7 +18,7 @@ jobs:
           token: ${{secrets.TOKEN}}
       - name: Update submodule and commit
         run: |
-          cd backend
+          cd frontend
           git checkout main
           git pull
           cd ..
