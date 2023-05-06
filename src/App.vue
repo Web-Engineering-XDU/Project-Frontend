@@ -1,85 +1,98 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { RouterLink, RouterView } from "vue-router";
-import HelloWorld from "./components/HelloWorld.vue";
+import { onMounted, ref, useCssModule } from "vue";
+import type { MenuOption } from "naive-ui";
+const activeKey = ref<string>("");
+const style = useCssModule();
+const menuOptions: MenuOption[] = [
+  {
+    label: () => (
+      <RouterLink to={"/"} class={[style.Home]}>
+        Home
+      </RouterLink>
+    ),
+    key: "home",
+  },
+  {
+    label: () => (
+      <RouterLink to={"/agents"} class={style.etc}>
+        Agents
+      </RouterLink>
+    ),
+    key: "agents",
+  },
+  {
+    label: () => (
+      <RouterLink to={"/events"} class={style.etc}>
+        Events
+      </RouterLink>
+    ),
+    key: "events",
+  },
+];
+
+activeKey.value = window.location.pathname.split("/")[1];
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <n-layout class="out">
+    <n-layout-header class="header">
+      <div class="container">
+        <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
+      </div>
+      <div></div
+    ></n-layout-header>
+    <n-layout-content
+      class="body"
+      content-style="padding: 24px;"
+      :native-scrollbar="false"
+      ><div class="content">
+        <div class="inner"><RouterView /></div>
+      </div>
+    </n-layout-content>
+  </n-layout>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.header {
+  height: 50px;
+  width: 100vw;
+  background-color: rgb(250, 250, 250);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgb(230, 230, 230);
 }
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.container {
+  width: 70vw;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  max-width: 1500px;
 }
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.body {
+  min-width: calc(100vh - 50px);
+  width: 100vw;
+  display: flex;
+  justify-content: center;
 }
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.content {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
 }
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.content .inner {
+  width: 70vw;
+  max-width: 1500px;
 }
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+</style>
+<style module>
+.Home {
+  font-size: 20px;
+  color: rgb(139, 138, 138) !important;
 }
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.etc {
+  font-size: 13px;
+  color: rgb(139, 138, 138);
 }
 </style>
