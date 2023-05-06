@@ -1,9 +1,11 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from "vue-router";
-import { onMounted, ref, useCssModule } from "vue";
+import { ref, useCssModule } from "vue";
 import type { MenuOption } from "naive-ui";
+import { Run } from "@vicons/carbon";
 const activeKey = ref<string>("");
 const style = useCssModule();
+const search = ref<string>("");
 const menuOptions: MenuOption[] = [
   {
     label: () => (
@@ -39,9 +41,24 @@ activeKey.value = window.location.pathname.split("/")[1];
     <n-layout-header class="header">
       <div class="container">
         <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
+        <div class="right-box">
+          <n-input size="small" v-model:value="search" round placeholder="Search" />
+          <n-tag type="info" style="margin-left: 20px" size="small" round>
+            <div style="display: flex; align-items: center">
+              <n-icon style="padding-right: 3px" size="12"><Run /></n-icon>12
+            </div>
+          </n-tag>
+          <n-popover trigger="click"
+            ><template #trigger>
+              <div :class="style.etc" style="margin-left: 20px; cursor: pointer">
+                Account
+              </div>
+            </template>
+            sddd
+          </n-popover>
+        </div>
       </div>
-      <div></div
-    ></n-layout-header>
+    </n-layout-header>
     <n-layout-content
       class="body"
       content-style="padding: 24px;"
@@ -84,6 +101,10 @@ activeKey.value = window.location.pathname.split("/")[1];
 .content .inner {
   width: 70vw;
   max-width: 1500px;
+}
+.right-box {
+  display: inline-flex;
+  align-items: center;
 }
 </style>
 <style module>
