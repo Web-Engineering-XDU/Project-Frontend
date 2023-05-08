@@ -1,9 +1,10 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from "vue-router";
-import { reactive, ref, useCssModule, watch } from "vue";
+import { onMounted, reactive, ref, useCssModule, watch } from "vue";
 import type { MenuOption } from "naive-ui";
 import { Run } from "@vicons/carbon";
 import { useCounterStore } from "./stores/counter";
+import router from "./router";
 const store = useCounterStore();
 const activeKey = ref<string>("");
 const style = useCssModule();
@@ -18,20 +19,21 @@ const menuOptions: MenuOption[] = reactive([
     key: "home",
   },
 ]);
+
 //已登录才显示下面两个
 if (store.logged) {
   menuOptions.push({
     label: () => (
       <RouterLink to={"/agents"} class={style.etc}>
-        Profile
+        Agents
       </RouterLink>
     ),
-    key: "profile",
+    key: "agents",
   });
   menuOptions.push({
     label: () => (
       <RouterLink to={"/events"} class={style.etc}>
-        Logout
+        Events
       </RouterLink>
     ),
     key: "logout",
@@ -44,110 +46,125 @@ watch(
       menuOptions.push({
         label: () => (
           <RouterLink to={"/agents"} class={style.etc}>
-            Profile
+            Agents
           </RouterLink>
         ),
-        key: "profile",
+        key: "agents",
       });
       menuOptions.push({
         label: () => (
           <RouterLink to={"/events"} class={style.etc}>
-            Logout
+            Events
           </RouterLink>
         ),
-        key: "logout",
+        key: "events",
       });
     }
+  }
+);
+watch(
+  () => router.currentRoute.value.path,
+  (path) => {
+    activeKey.value = path.split("/")[1];
   }
 );
 activeKey.value = window.location.pathname.split("/")[1];
 </script>
 
 <template>
-  <n-layout class="out" :native-scrollbar="false">
-    <n-layout-header class="header">
-      <div class="container">
-        <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
-        <div class="right-box">
-          <n-input
-            v-if="store.logged"
-            size="small"
-            v-model:value="search"
-            round
-            placeholder="Search"
-          />
-          <Transition
-            enter-active-class="animate__animated animate__fadeIn"
-            leave-active-class="animate__animated animate__fadeOut"
-          >
-            <n-tag
-              type="info"
-              v-if="store.count > 0 && store.logged"
-              style="margin-left: 20px"
+  <n-message-provider>
+    <n-layout class="out">
+      <n-layout-header class="header">
+        <div class="container">
+          <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
+          <div class="right-box">
+            <n-input
+              v-if="store.logged"
               size="small"
+              v-model:value="search"
               round
+              placeholder="Search"
+            />
+            <Transition
+              enter-active-class="animate__animated animate__fadeIn"
+              leave-active-class="animate__animated animate__fadeOut"
             >
-              <div style="display: flex; align-items: center">
-                <n-icon style="padding-right: 3px" size="12"><Run /></n-icon
-                >{{ store.count }}
-              </div>
-            </n-tag>
-          </Transition>
-          <n-popover trigger="click" placement="bottom-end"
-            ><template #trigger>
-              <div :class="style.etc" style="margin-left: 20px; cursor: pointer">
-                Account
-              </div>
-            </template>
-            <n-list style="min-width: 130px; font-size: 13px"
-              ><n-list-item class="item" v-if="store.logged">Profile</n-list-item
-              ><n-list-item
-                class="item"
-                v-if="!store.logged"
-                @click="$router.push('/user/signup')"
-                >Signup</n-list-item
-              ><n-list-item
-                class="item"
-                v-if="!store.logged"
-                @click="$router.push('/user/login')"
-                >Login</n-list-item
-              ><n-list-item class="item" v-if="store.logged">Logout</n-list-item></n-list
-            >
-          </n-popover>
+              <n-tag
+                type="info"
+                v-if="store.count > 0 && store.logged"
+                style="margin-left: 20px"
+                size="small"
+                round
+              >
+                <div style="display: flex; align-items: center">
+                  <n-icon style="padding-right: 3px" size="12"><Run /></n-icon
+                  >{{ store.count }}
+                </div>
+              </n-tag>
+            </Transition>
+            <n-popover v-if="false" trigger="click" placement="bottom-end"
+              ><template #trigger>
+                <div :class="style.etc" style="margin-left: 20px; cursor: pointer">
+                  Account
+                </div>
+              </template>
+              <n-list style="min-width: 130px; font-size: 13px"
+                ><n-list-item class="item" v-if="store.logged">Profile</n-list-item
+                ><n-list-item
+                  class="item"
+                  v-if="!store.logged"
+                  @click="$router.push('/user/signup')"
+                  >Signup</n-list-item
+                ><n-list-item
+                  class="item"
+                  v-if="!store.logged"
+                  @click="$router.push('/user/login')"
+                  >Login</n-list-item
+                ><n-list-item
+                  @click="
+                    store.logged = false;
+                    $router.push('/');
+                  "
+                  class="item"
+                  v-if="store.logged"
+                  >Logout</n-list-item
+                ></n-list
+              >
+            </n-popover>
+          </div>
         </div>
-      </div>
-    </n-layout-header>
-    <n-layout-content
-      class="body"
-      content-style="padding: 24px;"
-      :native-scrollbar="false"
-      ><div class="content">
-        <div class="inner">
-          <router-view v-slot="{ Component }">
-            <transition
-              enter-active-class="animate__animated animate__fadeIn animate_faster"
-              leave-active-class="animate__animated animate__fadeOut animate_faster"
-              mode="out-in"
-            >
-              <component :is="Component" />
-            </transition>
-          </router-view>
+      </n-layout-header>
+      <n-scrollbar style="max-height: calc(100vh - 50px); margin-top: 50px">
+        <n-layout-content class="body" content-style="padding: 24px;"
+          ><div class="content">
+            <div class="inner">
+              <router-view v-slot="{ Component }">
+                <transition
+                  enter-active-class="animate__animated animate__fadeIn animate_faster"
+                  leave-active-class="animate__animated animate__fadeOut animate_faster"
+                  mode="out-in"
+                >
+                  <component :is="Component" />
+                </transition>
+              </router-view>
+            </div>
+          </div>
+        </n-layout-content>
+        <div style="display: flex; justify-content: center">
+          <n-h4
+            style="
+              text-align: right;
+              margin-top: 10px;
+              height: 30px;
+              margin-bottom: 10px;
+              width: var(--width);
+            "
+            >©2023 SE Web Engineering</n-h4
+          >
         </div>
-      </div>
-    </n-layout-content>
-    <div style="display: flex; justify-content: center">
-      <n-h4
-        style="
-          text-align: right;
-          margin-top: 10px;
-          height: 30px;
-          margin-bottom: 10px;
-          width: var(--width);
-        "
-        >©2023 SE Web Engineering</n-h4
-      >
-    </div>
-  </n-layout>
+      </n-scrollbar>
+    </n-layout></n-message-provider
+  >
 </template>
 
 <style scoped>
@@ -184,11 +201,10 @@ activeKey.value = window.location.pathname.split("/")[1];
 }
 .body {
   width: 100vw;
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - 100px);
   display: flex;
   box-sizing: border-box;
   justify-content: center;
-  padding-top: 50px;
 }
 .content {
   width: 100vw;
@@ -217,6 +233,7 @@ activeKey.value = window.location.pathname.split("/")[1];
 <style>
 :root {
   --width: 70vw;
+  --animate-duration: 0.5s;
 }
 @media screen and (max-width: 1400px) {
   :root {
@@ -249,8 +266,5 @@ activeKey.value = window.location.pathname.split("/")[1];
 }
 .n-popover-shared {
   padding: 0px !important;
-}
-:root {
-  --animate-duration: 0.5s;
 }
 </style>

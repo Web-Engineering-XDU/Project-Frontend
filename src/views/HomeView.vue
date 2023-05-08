@@ -1,6 +1,15 @@
 <script setup lang="tsx">
+import { ref } from "vue";
 import { useCounterStore } from "../stores/counter";
+import type { AxiosResponse } from "axios";
+import type { Agent, Response } from "../types/index";
 const store = useCounterStore();
+const agentCount = ref(0);
+useCounterStore()
+  .Axios.get("/agent?page=0&number=0")
+  .then((res: AxiosResponse<Response<Agent>>) => {
+    agentCount.value = res.data.result.totalCount;
+  });
 </script>
 
 <template>
@@ -13,10 +22,18 @@ const store = useCounterStore();
       <n-h3>Info</n-h3>
       <div>
         You have created
-        <div style="display: inline-block; color: #2080f0">{{ 1 }}</div>
+        <div style="display: inline-block; color: #2080f0">{{ agentCount }}</div>
         agents.
       </div>
-      <n-button strong secondary type="primary" style="margin-top: 10px"> View </n-button>
+      <n-button
+        strong
+        secondary
+        type="primary"
+        @click="$router.push('/agents')"
+        style="margin-top: 10px"
+      >
+        View
+      </n-button>
       <div style="margin-top: 50px">
         Your agents have recorded
         <div style="display: inline-block; color: #2080f0">{{ 1 }}</div>
