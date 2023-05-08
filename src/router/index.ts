@@ -31,6 +31,27 @@ const router = createRouter({
           name:'signup',
           component:()=>import('../views/SignUp.vue')
         }]
+    },
+    {
+      path:'/agents',
+      
+      children:[
+        {
+          path:'',
+          name:'agents',
+          component:()=>import('../views/AgentsMain.vue'),
+        },
+        {
+          path:'add',
+          name:'add',
+          component:()=>import('../views/AddAgent.vue')
+        },
+        {
+          path:':id',
+          name:'agentdetail',
+          component:()=>import('../views/AgentDetail.vue')
+        }
+      ]
     }
   ]
 })
