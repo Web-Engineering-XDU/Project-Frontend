@@ -1,3 +1,4 @@
+import { selectors } from './index.d';
 import { Agent } from './../../types/index';
 
 export interface Agent {
@@ -20,6 +21,39 @@ export interface Response<T> {
     result: {
         content: Array<T>
         count: number
-        totalCount:number
+        totalCount: number
     }
+}
+export interface AgentNew<T> {
+    name: string
+    enable: boolean
+    typeId: number
+    description: string
+    eventForever: boolean
+    eventMaxAge: number
+    propJsonStr: T
+}
+export interface ScheduleAgent {
+    cron: string
+
+}
+export interface selectors {
+    varName: string,
+    selectorType: string,
+    selectorContent: string
+}
+export interface HttpAgent {
+    onUpdate: bool,
+    mergeEvent: bool,
+    urls: string[],
+    method: string,
+    header: {
+        [propName: string]: string
+    },
+    body: string,
+    template: {
+        [propName: string]: string
+    },
+    docType: string,
+    selectors: selectors[]
 }
