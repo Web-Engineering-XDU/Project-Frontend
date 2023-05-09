@@ -9,7 +9,7 @@
           size="large"
           :rail-style="
             () => {
-              return { width: '234px' };
+              return { width: '234px' }
             }
           "
           v-model:value="agent.enable"
@@ -26,9 +26,7 @@
         ><n-switch size="large" v-model:value="agent.eventForever">
           <template #checked> Events Destroyed Sometime </template>
           <template #unchecked>
-            <div style="text-align: center; padding-left: 13px">
-              Events Never Destroyed
-            </div>
+            <div style="text-align: center; padding-left: 13px">Events Never Destroyed</div>
           </template>
         </n-switch>
       </n-form-item>
@@ -73,10 +71,7 @@
                 :on-create="onCreate"
               >
                 <template #default="{ value }">
-                  <n-input
-                    v-model:value="value.varName"
-                    :placeholder="splitUpper('varName')"
-                  />
+                  <n-input v-model:value="value.varName" :placeholder="splitUpper('varName')" />
                   <n-input
                     v-model:value="value.selectorType"
                     :placeholder="splitUpper('selectorType')"
@@ -133,82 +128,88 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from "vue";
-import { useCounterStore } from "@/stores/counter";
-import type { AgentNew, HttpAgent, ScheduleAgent } from "@/types";
-import { useMessage } from "naive-ui";
-import RangeRenderVue from "./RangeRender.vue";
-import { useRouter } from "vue-router";
+import { ref, reactive, watch, onMounted } from 'vue'
+import { useCounterStore } from '@/stores/counter'
+import type { AgentNew, HttpAgent, ScheduleAgent } from '@/types'
+import { useMessage } from 'naive-ui'
+import RangeRenderVue from './RangeRender.vue'
+import { useRouter } from 'vue-router'
 interface keyValue {
-  key: string;
-  value: string;
+  key: string
+  value: string
 }
-const axios = useCounterStore().Axios;
-const message = useMessage();
-const tempHeader = ref<keyValue[]>([]);
-const tempTemplate = ref<keyValue[]>([]);
+const axios = useCounterStore().Axios
+const message = useMessage()
+const tempHeader = ref<keyValue[]>([])
+const tempTemplate = ref<keyValue[]>([])
 const props = defineProps({
-  id: Number,
-});
-const nameRef = ref();
+  id: Number
+})
+const nameRef = ref()
 const valiName = ref({
-  trigger: ["blur"],
+  trigger: ['blur'],
   required: true,
   validator() {
-    if (agent.name == "") {
-      return new Error("Name cannot be empty");
+    if (agent.name == '') {
+      return new Error('Name cannot be empty')
     }
-  },
-});
-const cronRef = ref();
-const time = ref(["", "", ""]);
+  }
+})
+const cronRef = ref()
+const time = reactive<String[]>(['', '', ''])
 function init<T extends number>(id: T): AgentNew<ScheduleAgent | HttpAgent> {
   if (id === 1) {
     return reactive<AgentNew<ScheduleAgent>>({
-      name: "",
+      name: '',
       enable: false,
       typeId: 1,
-      description: "",
+      description: '',
       eventForever: false,
       eventMaxAge: 0,
       propJsonStr: {
-        cron: "",
-      },
-    });
+        cron: ''
+      }
+    })
   } else {
     return reactive<AgentNew<HttpAgent>>({
-      name: "",
+      name: '',
       enable: false,
       typeId: 2,
-      description: "",
+      description: '',
       eventForever: false,
       eventMaxAge: 0,
       propJsonStr: {
         onUpdate: false,
         mergeEvent: false,
-        urls: [""],
-        method: "GET",
-        header: { sd: "s" },
-        body: "",
+        urls: [''],
+        method: 'GET',
+        header: { sd: 's' },
+        body: '',
         template: {},
-        docType: "",
-        selectors: [],
-      },
-    });
+        docType: '',
+        selectors: []
+      }
+    })
   }
 }
 const cronValidate = (cron: string) => {
-  const cronSplit = cron.split(" ");
+  const cronSplit = cron.split(' ')
   if (cronSplit.length != 6) {
-    return false;
+    return false
   }
-  const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronSplit;
-  const secondReg = /^(\*|([0-5]?\d)(-[0-5]?\d)?(\/\d+)?(,[0-5]?\d(-[0-5]?\d)?(\/\d+)?)*|\?|L|\*\/\d+)$/;
-  const minuteReg = /^(\*|([0-5]?\d)(-[0-5]?\d)?(\/\d+)?(,[0-5]?\d(-[0-5]?\d)?(\/\d+)?)*|\?|L|\*\/\d+)$/;
-  const hourReg = /^(\*|([0-1]?\d|2[0-3])(-([0-1]?\d|2[0-3]))?(\/\d+)?(,([0-1]?\d|2[0-3])(-([0-1]?\d|2[0-3]))?(\/\d+)?)*|\?|L|\*\/\d+)$/;
-  const dayOfMonthReg = /^(\*|([1-2]?\d|3[0-1])(-([1-2]?\d|3[0-1]))?(\/\d+)?(,([1-2]?\d|3[0-1])(-([1-2]?\d|3[0-1]))?(\/\d+)?)*|\?|L|\*\/\d+)$/;
-  const monthReg = /^(\*|([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(-([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))?(\/\d+)?(,([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(-([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))?(\/\d+)?)*|\?|L|\*\/\d+)$/;
-  const dayOfWeekReg = /^(\*|([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(-([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT))?(\/\d+)?(,([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(-([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT))?(\/\d+)?)*|\?|L|\*\/\d+)$/;
+  const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronSplit
+  const secondReg =
+    /^(\*|([0-5]?\d)(-[0-5]?\d)?(\/\d+)?(,[0-5]?\d(-[0-5]?\d)?(\/\d+)?)*|\?|L|\*\/\d+)$/
+  const minuteReg =
+    /^(\*|([0-5]?\d)(-[0-5]?\d)?(\/\d+)?(,[0-5]?\d(-[0-5]?\d)?(\/\d+)?)*|\?|L|\*\/\d+)$/
+  const hourReg =
+    /^(\*|([0-1]?\d|2[0-3])(-([0-1]?\d|2[0-3]))?(\/\d+)?(,([0-1]?\d|2[0-3])(-([0-1]?\d|2[0-3]))?(\/\d+)?)*|\?|L|\*\/\d+)$/
+  const dayOfMonthReg =
+    /^(\*|([1-2]?\d|3[0-1])(-([1-2]?\d|3[0-1]))?(\/\d+)?(,([1-2]?\d|3[0-1])(-([1-2]?\d|3[0-1]))?(\/\d+)?)*|\?|L|\*\/\d+)$/
+  const monthReg =
+    /^(\*|([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(-([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))?(\/\d+)?(,([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(-([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))?(\/\d+)?)*|\?|L|\*\/\d+)$/
+  const dayOfWeekReg =
+    /^(\*|([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(-([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT))?(\/\d+)?(,([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)(-([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT))?(\/\d+)?)*|\?|L|\*\/\d+)$/
   if (
     second.match(secondReg) &&
     minute.match(minuteReg) &&
@@ -217,76 +218,81 @@ const cronValidate = (cron: string) => {
     month.match(monthReg) &&
     dayOfWeek.match(dayOfWeekReg)
   ) {
-    return true;
+    return true
   } else {
-    return false;
+    return false
   }
-};
+}
 function onCreate() {
   return {
-    varName: "",
-    selectorType: "",
-    selectorContent: "",
-  };
+    varName: '',
+    selectorType: '',
+    selectorContent: ''
+  }
 }
 //闭包
 
 const splitUpper = (str: string) => {
   //把首字母大写并按大写字母用空格分割
-  return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
-    return str.toUpperCase();
-  });
-};
-const router = useRouter();
+  return str.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
+    return str.toUpperCase()
+  })
+}
+const router = useRouter()
 const rule = ref({
-  trigger: ["blur"],
+  trigger: ['blur'],
   required: true,
   validator() {
     if (!cronValidate((agent.propJsonStr as ScheduleAgent).cron)) {
-      return new Error("Syntax Error");
+      return new Error('Syntax Error')
     }
-  },
-});
-const agent = init(props.id!);
-console.log((agent.propJsonStr as HttpAgent).urls instanceof Array);
+  }
+})
+const agent = init(props.id!)
+console.log((agent.propJsonStr as HttpAgent).urls instanceof Array)
 watch(
   () => props.id,
   (val: any) => {
     const x = {
-      name: "",
+      name: '',
       enable: false,
-      description: "",
+      description: '',
       eventForever: false,
-      eventMaxAge: 0,
-    };
-    x.name = agent.name;
-    x.enable = agent.enable;
-    x.description = agent.description;
-    x.eventForever = agent.eventForever;
-    x.eventMaxAge = agent.eventMaxAge;
-    Object.assign(agent, init(val));
+      eventMaxAge: 0
+    }
+    x.name = agent.name
+    x.enable = agent.enable
+    x.description = agent.description
+    x.eventForever = agent.eventForever
+    x.eventMaxAge = agent.eventMaxAge
+    Object.assign(agent, init(val))
     //重置tempTemplate和tempHeader
-    tempHeader.value = [];
-    tempTemplate.value = [];
-    agent.name = x.name;
-    agent.enable = x.enable;
-    agent.description = x.description;
-    agent.eventForever = x.eventForever;
-    agent.eventMaxAge = x.eventMaxAge;
-    console.log(JSON.stringify(agent.propJsonStr));
+    tempHeader.value = []
+    tempTemplate.value = []
+    agent.name = x.name
+    agent.enable = x.enable
+    agent.description = x.description
+    agent.eventForever = x.eventForever
+    agent.eventMaxAge = x.eventMaxAge
+    console.log(JSON.stringify(agent.propJsonStr))
   }
-);
+)
 watch(
   () => time,
   (val: any) => {
+    console.log(val[0])
+    let a = val[0] == '' ? 0 : Number.parseInt(val[0])
+    let b = val[1] == '' ? 0 : Number.parseInt(val[1])
+    let c = val[2] == '' ? 0 : Number.parseInt(val[2])
     //以nanosecond存储
     agent.eventMaxAge =
-      val[0] * 24 * 60 * 60 * 1000 * 1000 * 1000 +
-      val[1] * 60 * 1000 * 1000 * 1000 +
-      val[2] * 1000 * 1000 * 1000;
+      a * 24 * 60 * 60 * 1000 * 1000 * 1000 + b * 60 * 1000 * 1000 * 1000 + c * 1000 * 1000 * 1000
+    console.log(
+      a * 24 * 60 * 60 * 1000 * 1000 * 1000 + b * 60 * 1000 * 1000 * 1000 + c * 1000 * 1000 * 1000
+    )
   },
   { deep: true }
-);
+)
 const save = () => {
   nameRef.value
     .validate()
@@ -296,14 +302,14 @@ const save = () => {
           .validate()
           .then(() => {
             if (props.id == 2) {
-              agent.propJsonStr.header = {};
-              agent.propJsonStr.template = {};
+              agent.propJsonStr.header = {}
+              agent.propJsonStr.template = {}
               tempHeader.value.forEach((item) => {
-                agent.propJsonStr.header[item.key] = item.value;
-              });
+                agent.propJsonStr.header[item.key] = item.value
+              })
               tempTemplate.value.forEach((item) => {
-                agent.propJsonStr.template[item.key] = item.value;
-              });
+                agent.propJsonStr.template[item.key] = item.value
+              })
             }
             //Add Content-Type: application/x-www-form-urlencoded in axios
             const agentReal: AgentNew<string> = {
@@ -313,28 +319,28 @@ const save = () => {
               description: agent.description,
               eventForever: agent.eventForever,
               eventMaxAge: agent.eventMaxAge,
-              propJsonStr: JSON.stringify(agent.propJsonStr),
-            };
-            axios.put("/agent", agentReal).then((res) => {
+              propJsonStr: JSON.stringify(agent.propJsonStr)
+            }
+            axios.put('/agent', agentReal).then((res) => {
               if (res.data.code == 200) {
-                message.success("Save success!");
+                message.success('Save success!')
                 setTimeout(() => {
-                  router.push("/agents");
-                }, 50);
+                  router.push('/agents')
+                }, 50)
               }
-            });
+            })
           })
-          .catch(() => {});
+          .catch(() => {})
       else {
         if (props.id == 2) {
-          agent.propJsonStr.header = {};
-          agent.propJsonStr.template = {};
+          agent.propJsonStr.header = {}
+          agent.propJsonStr.template = {}
           tempHeader.value.forEach((item) => {
-            agent.propJsonStr.header[item.key] = item.value;
-          });
+            agent.propJsonStr.header[item.key] = item.value
+          })
           tempTemplate.value.forEach((item) => {
-            agent.propJsonStr.template[item.key] = item.value;
-          });
+            agent.propJsonStr.template[item.key] = item.value
+          })
         }
         //Add Content-Type: application/x-www-form-urlencoded in axios
         const agentReal: AgentNew<string> = {
@@ -344,20 +350,20 @@ const save = () => {
           description: agent.description,
           eventForever: agent.eventForever,
           eventMaxAge: agent.eventMaxAge,
-          propJsonStr: JSON.stringify(agent.propJsonStr),
-        };
-        axios.put("/agent", agentReal).then((res) => {
+          propJsonStr: JSON.stringify(agent.propJsonStr)
+        }
+        axios.put('/agent', agentReal).then((res) => {
           if (res.data.code == 200) {
-            message.success("Save success!");
+            message.success('Save success!')
             setTimeout(() => {
-              router.push("/agents");
-            }, 50);
+              router.push('/agents')
+            }, 50)
           }
-        });
+        })
       }
     })
-    .catch(() => {});
-};
+    .catch(() => {})
+}
 </script>
 <style scoped>
 .home {
