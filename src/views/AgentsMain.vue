@@ -140,6 +140,7 @@ const handlePageChange = (currentPage: any) => {
             pagination.pageCount = 1;
             // @ts-ignore-next-line
             pagination.itemCount = 0;
+            data.value = datax.data.result.content;
             loading.value = false;
             return
           }

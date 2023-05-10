@@ -4,8 +4,8 @@
       <n-form-item ref="nameRef" :rule="valiName" :key="1" label="Name"><n-input
           v-model:value="agent.name"></n-input></n-form-item>
       <n-form-item :key="2" label="Enabled"><n-switch size="large" :rail-style="() => {
-          return { width: '234px' };
-        }
+        return { width: '234px' };
+      }
         " v-model:value="agent.enable">
           <template #checked>
             <div style="text-align: center; padding-right: 25px">Run When Triggered</div>
@@ -24,18 +24,20 @@
           </template>
         </n-switch>
       </n-form-item>
-      <n-form-item :key="4" v-if="agent.eventForever && !isScheduleAgent(agent)" label="Event Max Age"><n-input
-          style="margin-right: 6px; width: calc(33% - 4px)" v-model:value="time[0]" placeholder="Day"></n-input><n-input
-          style="margin-right: 6px; width: calc(33% - 4px)" v-model:value="time[1]"
-          placeholder="Minute"></n-input><n-input style="width: calc(33% - 4px)" v-model:value="time[2]"
-          placeholder="Second"></n-input></n-form-item>
+      <n-form-item :key="4" v-if="agent.eventForever && !isScheduleAgent(agent)" label="Event Max Age"><n-input-number
+          :min="0" style="margin-right: 6px; width: calc(33% - 4px)" v-model:value="time[0]"
+          placeholder="Day"></n-input-number><n-input-number :min="0" style="margin-right: 6px; width: calc(33% - 4px)"
+          v-model:value="time[1]" placeholder="Minute"></n-input-number><n-input-number :min="0"
+          style="width: calc(33% - 4px)" v-model:value="time[2]" placeholder="Second"></n-input-number></n-form-item>
       <n-form-item :key="5" label="Description"><n-input type="textarea" v-model:value="agent.description"></n-input>
       </n-form-item>
       <n-h3 style="margin-top: -10px" :key="6">Props</n-h3>
       <template v-for="(item, key) of agent!.propJsonStr" :key="key">
         <template v-if="typeof item == 'object'">
           <template v-if="((item as any) instanceof Array)">
-            <n-form-item v-if="typeof item[0] !== 'object' && key != 'selectors'" :label="splitUpper(key)">
+            <n-form-item :ref="key == 'urls' ? 'urlsRef' : undefined"
+              v-if="typeof item[0] !== 'object' && key != 'selectors'" :label="splitUpper(key)"
+              :rule="key == 'urls' ? ruleUrl : undefined">
               <n-dynamic-input v-model:value="agent.propJsonStr[key]" :placeholder="splitUpper('pleaseInput')" :min="1" />
             </n-form-item>
             <n-form-item v-else :label="splitUpper(key)">
@@ -62,10 +64,12 @@
           </template>
         </template>
         <n-form-item :ref="key == 'cron' ? 'cronRef' : undefined" v-else :label="splitUpper(key)"
-          :rule="key == 'cron' ? rule : undefined"><n-select v-if="key == 'docType'"
-            v-model:value="agent.propJsonStr[key]" :options="typeOpt"></n-select>
-          <n-input v-else-if="typeof item == 'string'" v-model:value="agent.propJsonStr[key]" /><n-switch
-            v-model:value="agent.propJsonStr[key]" v-else-if="typeof item == 'boolean'"></n-switch></n-form-item>
+          :rule="key == 'cron' ? rule : undefined"><n-select v-if="key == 'docType' || key == 'method'"
+            v-model:value="agent.propJsonStr[key]" :options="key == 'docType' ? typeOpt : methodOpt"
+            :filterable="key == 'method'" :tag="key == 'method'"></n-select>
+          <n-input :type="key == 'body' ? 'textarea' : ''" v-else-if="typeof item == 'string'"
+            v-model:value="agent.propJsonStr[key]" /><n-switch v-model:value="agent.propJsonStr[key]"
+            v-else-if="typeof item == 'boolean'"></n-switch></n-form-item>
       </template>
     </TransitionGroup>
     <n-button type="primary" @click="save">Save</n-button>
@@ -90,6 +94,7 @@ const tempTemplate = ref<keyValue[]>([]);
 const props = defineProps({
   id: Number,
 });
+const urlsRef = ref();
 const nameRef = ref();
 const valiName = ref({
   trigger: ["blur"],
@@ -111,8 +116,21 @@ const typeOpt = [
     value: "json",
   },
 ];
+const ruleUrl = ref({
+  trigger: ['blur'],
+  required: true, 
+  validator() {
+    let temp = true;
+    (agent.propJsonStr as HttpAgent).urls.forEach((item) => {
+      if (item == '')
+        temp = false
+    })
+    if (!temp || (agent.propJsonStr as HttpAgent).urls.length == 0)
+      return new Error('Urls can not be empty')
+  }
+})
 const cronRef = ref();
-const time = reactive<String[]>(["", "", ""]);
+const time = reactive<Number[]>([null as unknown as number, null as unknown as number, null as unknown as number]);
 function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpAgent> {
   if (id === 1) {
     return reactive<AgentNew<ScheduleAgent>>({
@@ -139,7 +157,7 @@ function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpA
         mergeEvent: false,
         urls: [""],
         method: "GET",
-        header: { sd: "s" },
+        header: {},
         body: "",
         template: {},
         docType: "json",
@@ -181,7 +199,24 @@ function onCreate() {
   };
 }
 //闭包
-
+const methodOpt = [
+  {
+    label: 'GET',
+    value: 'GET',
+  },
+  {
+    label: 'POST',
+    value: 'POST',
+  },
+  {
+    label: 'PUT',
+    value: 'PUT',
+  },
+  {
+    label: 'DELETE',
+    value: 'DELETE',
+  },
+]
 const splitUpper = (str: string) => {
   //把首字母大写并按大写字母用空格分割
   return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
@@ -199,7 +234,6 @@ const rule = ref({
   },
 });
 const agent = init(props.id!);
-console.log((agent.propJsonStr as HttpAgent).urls instanceof Array);
 watch(
   () => props.id,
   (val: any) => {
@@ -224,26 +258,20 @@ watch(
     agent.description = x.description;
     agent.eventForever = x.eventForever;
     agent.eventMaxAge = x.eventMaxAge;
-    console.log(JSON.stringify(agent.propJsonStr));
   }
 );
 watch(
   () => time,
   (val: any) => {
-    console.log(val[0]);
-    let a = val[0] == "" ? 0 : Number.parseInt(val[0]);
-    let b = val[1] == "" ? 0 : Number.parseInt(val[1]);
-    let c = val[2] == "" ? 0 : Number.parseInt(val[2]);
+    const a = val[0] == null ? 0 : val[0];
+    const b = val[1] == null ? 0 : val[1];
+    const c = val[2] == null ? 0 : val[2];
     //以nanosecond存储
     agent.eventMaxAge =
       a * 24 * 60 * 60 * 1000 * 1000 * 1000 +
       b * 60 * 1000 * 1000 * 1000 +
       c * 1000 * 1000 * 1000;
-    console.log(
-      a * 24 * 60 * 60 * 1000 * 1000 * 1000 +
-      b * 60 * 1000 * 1000 * 1000 +
-      c * 1000 * 1000 * 1000
-    );
+
   },
   { deep: true }
 );
@@ -274,8 +302,8 @@ const save = () => {
             });
           })
           .catch(() => { });
-      else {
-        if (isHttpAgent(agent)) {
+      else if (isHttpAgent(agent)) {
+        urlsRef.value[0].validate().then(() => {
           agent.propJsonStr.header = {};
           agent.propJsonStr.template = {};
           tempHeader.value.forEach((item) => {
@@ -284,24 +312,26 @@ const save = () => {
           tempTemplate.value.forEach((item) => {
             agent.propJsonStr.template[item.key] = item.value;
           });
-        }
-        const agentReal: AgentNew<string> = {
-          name: agent.name,
-          enable: agent.enable,
-          typeId: agent.typeId,
-          description: agent.description,
-          eventForever: agent.eventForever,
-          eventMaxAge: agent.eventMaxAge,
-          propJsonStr: JSON.stringify(agent.propJsonStr),
-        };
-        axios.put("/agent", agentReal).then((res) => {
-          if (res.data.code == 200) {
-            message.success("Save success!");
-            setTimeout(() => {
-              router.push("/agents");
-            }, 50);
-          }
-        });
+
+          const agentReal: AgentNew<string> = {
+            name: agent.name,
+            enable: agent.enable,
+            typeId: agent.typeId,
+            description: agent.description,
+            eventForever: agent.eventForever,
+            eventMaxAge: agent.eventMaxAge,
+            propJsonStr: JSON.stringify(agent.propJsonStr),
+          };
+          axios.put("/agent", agentReal).then((res) => {
+            if (res.data.code == 200) {
+              message.success("Save success!");
+              setTimeout(() => {
+                router.push("/agents");
+              }, 50);
+            }
+          });
+        }).catch(() => { });
+
       }
     })
     .catch(() => { });
