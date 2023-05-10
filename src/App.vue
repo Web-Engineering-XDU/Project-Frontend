@@ -207,7 +207,7 @@ activeKey.value = window.location.pathname.split("/")[1];
   justify-content: center;
 }
 .content {
-  width: 100vw;
+  width: calc(100vw - 48px);
   display: flex;
   justify-content: center;
 }

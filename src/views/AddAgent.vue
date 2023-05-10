@@ -45,7 +45,7 @@ const options = ref([
 }
 
 .form-box {
-  width: 500px;
+  width: 600px;
   max-width: 90vw;
   flex-wrap: wrap;
   display: inline-flex;
