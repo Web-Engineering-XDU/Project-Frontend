@@ -10,7 +10,7 @@
         </n-form-item>
       </div>
       <div style="width: 100%">
-        <AgentInner :id="tempid" v-if="tempid != ''" />
+        <AgentInner :id="Number(tempid)" v-if="tempid != ''" />
       </div>
       <n-divider/>
       <n-button @click="$router.go(-1)"
