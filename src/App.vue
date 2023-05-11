@@ -76,10 +76,11 @@ activeKey.value = window.location.pathname.split("/")[1];
     <n-layout class="out">
       <n-layout-header class="header">
         <div class="container">
-          <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
+          <n-menu class="menu" v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
           <div class="right-box">
             <n-input
               v-if="store.logged"
+              :class="style.phoneAdjust"
               size="small"
               v-model:value="search"
               round
@@ -168,6 +169,16 @@ activeKey.value = window.location.pathname.split("/")[1];
 </template>
 
 <style scoped>
+.menu{
+  margin-left:-20px;
+}
+@media  (max-width: 500px) {
+  .menu{
+    margin-left:0px;
+  }
+}
+  
+
 .item:hover {
   background-color: rgb(245, 245, 245);
 }
@@ -201,7 +212,7 @@ activeKey.value = window.location.pathname.split("/")[1];
 }
 .body {
   width: 100vw;
-  min-height: calc(100vh - 100px);
+  min-height: calc(100vh - 130px);
   display: flex;
   box-sizing: border-box;
   justify-content: center;
@@ -229,11 +240,20 @@ activeKey.value = window.location.pathname.split("/")[1];
   font-size: 13px;
   color: rgb(139, 138, 138);
 }
+.phoneAdjust{
+  display: unset;
+}
+@media  (max-width: 500px) {
+  .phoneAdjust {
+    display: none;
+  }
+}
+  
 </style>
 <style>
 :root {
   --width: 70vw;
-  --animate-duration: 0.5s;
+  --animate-duration: 0.8s;
 }
 @media screen and (max-width: 1400px) {
   :root {
@@ -266,5 +286,8 @@ activeKey.value = window.location.pathname.split("/")[1];
 }
 .n-popover-shared {
   padding: 0px !important;
+}
+body{
+  overflow-x: hidden;
 }
 </style>

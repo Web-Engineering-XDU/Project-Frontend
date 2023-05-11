@@ -15,14 +15,14 @@ export interface Agent {
     createAt: string
     typeName: string
 }
-export interface Response<T> extends SimpleResponse{
+export interface Response<T> extends SimpleResponse {
     result: {
         content: Array<T>
         count: number
         totalCount: number
     }
 }
-export interface SimpleResponse{
+export interface SimpleResponse {
     code: number
     msg: string
 }
@@ -56,6 +56,14 @@ export interface HttpAgent {
     template: {
         [propName: string]: string
     },
-    docType: 'html'|'json',
+    docType: 'html' | 'json',
     selectors: selectors[]
+}
+export interface Relations {
+    agentId: number,
+    dsts: number[],
+    srcs: number[]
+}
+export interface Event{
+    
 }

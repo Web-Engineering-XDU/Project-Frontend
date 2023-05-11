@@ -48,8 +48,18 @@ const router = createRouter({
         },
         {
           path:':id',
-          name:'agentdetail',
-          component:()=>import('../views/AgentDetail.vue')
+          children:[
+            {
+              path:'',
+              name:'agentdetail',
+              component:()=>import('../views/AgentDetail.vue')
+            },
+            {
+              path:'edit',
+              name:'edit',
+              component:()=>import('../views/EditAgent.vue')
+            }
+          ]
         }
       ]
     }

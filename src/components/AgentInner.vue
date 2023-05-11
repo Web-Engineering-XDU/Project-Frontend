@@ -71,31 +71,66 @@
             v-model:value="agent.propJsonStr[key]" /><n-switch v-model:value="agent.propJsonStr[key]"
             v-else-if="typeof item == 'boolean'"></n-switch></n-form-item>
       </template>
+      <n-h3 style="margin-top: -10px" :key="111">Relations</n-h3>
+      <n-form-item :label="'Destination'" :key="121"><n-select v-model:value="relation.dsts" multiple filterable
+          :options="options[0]" :loading="loading[0]" clearable remote :clear-filter-after-select="false"
+          :reset-menu-on-options-change="false" @blur="blur(0)" @search="(e: string) => handleSearch(e, 0)"
+          @scroll="(e: Event) => handleScroll(e, 0)"></n-select></n-form-item>
+      <n-form-item v-if="!isScheduleAgent(agent)" :key="122" :label="'Source'"><n-select v-model:value="relation.srcs"
+          multiple filterable :options="options[1]" :loading="loading[1]" clearable remote
+          :reset-menu-on-options-change="false" @blur="blur(1)" :clear-filter-after-select="false"
+          @search="(e: string) => handleSearch(e, 1)" @scroll="(e: Event) => handleScroll(e, 1)"></n-select></n-form-item>
     </TransitionGroup>
     <n-button type="primary" @click="save">Save</n-button>
     <n-button style="margin-left: 10px">Dry Run</n-button>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, reactive, watch, onMounted, nextTick } from "vue";
 import { useCounterStore } from "@/stores/counter";
-import type { AgentNew, HttpAgent, ScheduleAgent } from "@/types";
-import { useMessage } from "naive-ui";
+import type { AgentNew, HttpAgent, ScheduleAgent, Relations, Response } from "@/types";
+import { useMessage, type SelectOption } from "naive-ui";
 import RangeRenderVue from "./RangeRender.vue";
 import { useRouter } from "vue-router";
+import type { AxiosResponse } from "axios";
+interface simple {
+  Id: number,
+  Name: string
+}
+const loading = reactive([false, false]);
+const options = reactive<SelectOption[][]>([[], []]);
 interface keyValue {
   key: string;
   value: string;
 }
+const isHttpAgent = (
+  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>
+): Agent is AgentNew<HttpAgent> => {
+  return Agent.typeId == 2;
+};
+const isScheduleAgent = (
+  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>
+): Agent is AgentNew<ScheduleAgent> => {
+  return Agent.typeId == 1;
+};
 const axios = useCounterStore().Axios;
 const message = useMessage();
 const tempHeader = ref<keyValue[]>([]);
 const tempTemplate = ref<keyValue[]>([]);
+const relation = reactive<Relations>({
+  agentId: 0,
+  dsts: [],
+  srcs: []
+})
 const props = defineProps({
   id: Number,
+  mode: String,
+  data: Object,
+  ids: Number
 });
 const urlsRef = ref();
 const nameRef = ref();
+const query = reactive<Array<string>>(['', ''])
 const valiName = ref({
   trigger: ["blur"],
   required: true,
@@ -105,6 +140,11 @@ const valiName = ref({
     }
   },
 });
+const blur = (s: number) => {
+  setTimeout(() => {
+    handleSearch('', s)
+  }, 200);
+}
 const typeOpt = [
   {
     label: "HTML",
@@ -116,9 +156,101 @@ const typeOpt = [
     value: "json",
   },
 ];
+const handleSearch = (quer: string, a: number) => {
+  if (!quer.length) {
+    options[a] = []
+    query[a] = ''
+    queryRelation(quer, a, 1).then(() => {
+      loading[a] = false
+    })
+    return
+  }
+  query[a] = quer
+  queryRelation(quer, a, 1).then(() => {
+    loading[a] = false
+  })
+}
+const handleScroll = (e: Event, a: number) => {
+  const target = e.target as HTMLDivElement
+  const scrollDistance = target.scrollHeight - target.scrollTop - target.clientHeight
+  if (scrollDistance < 50 && !loading[a]) {
+    const top = target.scrollTop
+    queryRelation(query[a], a, Math.floor(options[a].length / 10) + 1, true, top).then(() => {
+      loading[a] = false
+      //滚轮回到原位
+
+
+    })
+  }
+}
+const total = reactive([0, 0])
+const queryRelation = async (query: string, type: number, page: number, mode: boolean = false, dis = 0, pagesize = 10): Promise<boolean> => {
+  loading[type] = true
+  if (mode && options[type].length == total[type])
+    return Promise.resolve(false)
+  const res: AxiosResponse<Response<simple>> = await axios.get('/agent/relationable', {
+    params: {
+      id: props.ids,
+      keyword: query,
+      type: type == 1 ? 'prev' : 'next',
+      page: page,
+      number: pagesize
+    }
+  });
+  if (res.data.code == 200) {
+    //keep selected options 
+    const selected = options[type].filter((item) => {
+      return relation[type == 1 ? 'srcs' : 'dsts'].includes(item.value as number)
+    })
+    let len = 0;
+    selected.forEach((item) => {
+      //如果query这个字符串在item.label中，则len不变，否则len+1，忽略大小写
+      if (item.label!.toString().toLowerCase().includes(query.toLowerCase()))
+        len++
+    })
+    //mode 为true则push，否则覆盖
+    if (!mode) {
+      options[type] = res.data.result.content.map((item) => {
+        return {
+          label: item.Name,
+          value: item.Id
+        }
+      })
+      total[type] = res.data.result.totalCount 
+    }
+    if (mode)
+      options[type].push(...res.data.result.content.map((item) => {
+        return {
+          label: item.Name,
+          value: item.Id
+        }
+      }))
+    //Remove selected by another type
+    options[type].forEach((item) => {
+      if (relation[type == 1 ? 'dsts' : 'srcs'].includes(item.value as number)) {
+        item.disabled = true
+      }
+    })
+    //在头部插入selected
+    //options[type].unshift(...selected)
+    //去重
+    options[type] = Array.from(new Set(options[type].map((item) => {
+      return item.value
+    }))).map((item) => {
+      return options[type].find((item2) => {
+        return item2.value == item
+      })!
+    })
+
+    return Promise.resolve(true);
+  }
+
+  else
+    return Promise.resolve(false);
+}
 const ruleUrl = ref({
   trigger: ['blur'],
-  required: true, 
+  required: true,
   validator() {
     let temp = true;
     (agent.propJsonStr as HttpAgent).urls.forEach((item) => {
@@ -234,6 +366,26 @@ const rule = ref({
   },
 });
 const agent = init(props.id!);
+if (props.mode == 'edit') {
+  //把props.data按键值对赋值给agent
+  Object.assign(agent, JSON.parse(JSON.stringify(props.data)));
+  //把header和template放回对应临时变量
+  if (isHttpAgent(agent)) {
+    for (const key in agent.propJsonStr.header) {
+      tempHeader.value.push({
+        key: key,
+        value: agent.propJsonStr.header[key],
+      });
+    }
+    for (const key in agent.propJsonStr.template) {
+      tempTemplate.value.push({
+        key: key,
+        value: agent.propJsonStr.template[key],
+      });
+    }
+
+  }
+}
 watch(
   () => props.id,
   (val: any) => {
@@ -275,6 +427,12 @@ watch(
   },
   { deep: true }
 );
+queryRelation('', 0, 1).then(() => {
+  loading[0] = false
+})
+queryRelation('', 1, 1).then(() => {
+  loading[1] = false
+})
 const save = () => {
   nameRef.value
     .validate()
@@ -292,14 +450,24 @@ const save = () => {
               eventMaxAge: agent.eventMaxAge,
               propJsonStr: JSON.stringify(agent.propJsonStr),
             };
-            axios.put("/agent", agentReal).then((res) => {
-              if (res.data.code == 200) {
-                message.success("Save success!");
-                setTimeout(() => {
-                  router.push("/agents");
-                }, 50);
-              }
-            });
+            if (props.mode == 'add')
+              axios.put("/agent", agentReal).then((res) => {
+                if (res.data.code == 200) {
+                  message.success("Save success!");
+                  setTimeout(() => {
+                    router.push("/agents");
+                  }, 50);
+                }
+              });
+            else if (props.mode == 'edit')
+              axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
+                if (res.data.code == 200) {
+                  message.success("Update success!");
+                  setTimeout(() => {
+                    router.push("/agents");
+                  }, 50);
+                }
+              });
           })
           .catch(() => { });
       else if (isHttpAgent(agent)) {
@@ -322,30 +490,33 @@ const save = () => {
             eventMaxAge: agent.eventMaxAge,
             propJsonStr: JSON.stringify(agent.propJsonStr),
           };
-          axios.put("/agent", agentReal).then((res) => {
-            if (res.data.code == 200) {
-              message.success("Save success!");
-              setTimeout(() => {
-                router.push("/agents");
-              }, 50);
-            }
-          });
+          if (props.mode == 'add')
+            axios.put("/agent", agentReal).then((res) => {
+              if (res.data.code == 200) {
+                message.success("Save success!");
+                setTimeout(() => {
+                  router.push("/agents");
+                }, 50);
+              }
+            });
+          else if (props.mode == 'edit')
+            axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
+              if (res.data.code == 200) {
+                message.success("Update success!");
+                setTimeout(() => {
+                  router.push("/agents");
+                }, 50);
+              }
+            });
         }).catch(() => { });
 
       }
     })
     .catch(() => { });
 };
-const isHttpAgent = (
-  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>
-): Agent is AgentNew<HttpAgent> => {
-  return Agent.typeId == 2;
-};
-const isScheduleAgent = (
-  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>
-): Agent is AgentNew<ScheduleAgent> => {
-  return Agent.typeId == 1;
-};
+watch(relation, (val) => {
+  
+}, { deep: true })
 </script>
 <style scoped>
 .home {

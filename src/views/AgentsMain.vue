@@ -17,6 +17,8 @@ import type { Agent, Response, SimpleResponse } from "@/types/index";
 import type { AxiosResponse } from "axios";
 import { useMessage, type DropdownOption, type DropdownDividerOption } from "naive-ui";
 import { Edit } from "@vicons/carbon";
+import {useRouter} from 'vue-router'
+const router = useRouter()
 const data = ref<Agent[]>([]);
 const loading = ref(true);
 const store = useCounterStore();
@@ -53,6 +55,9 @@ const handleSelect = (key: string) => {
           handlePageChange(1);
         }
       })
+      break
+    case 'edit':
+      router.push('/agents/' + pointer.value+'/edit')
       break
   }
   showDropdown.value = false
@@ -178,13 +183,10 @@ query(1, pagination.pageSize).then((datax: AxiosResponse<Response<Agent>>) => {
       pagination.pageCount = 1;
       // @ts-ignore-next-line
       pagination.itemCount = 0;
-      console.log(pagination)
       loading.value = false;
       return
     }
-    console.log(data);
     data.value = datax.data.result.content;
-    console.log(data.value);
     pagination.page = 1;
     pagination.pageCount = Math.ceil(datax.data.result.count / pagination.pageSize);
     // @ts-ignore-next-line
@@ -192,9 +194,7 @@ query(1, pagination.pageSize).then((datax: AxiosResponse<Response<Agent>>) => {
     loading.value = false;
   }
 });
-axios.get("/agent").then((res) => {
-  console.log(res.data);
-});
+
 </script>
 <style scoped>
 .about {
