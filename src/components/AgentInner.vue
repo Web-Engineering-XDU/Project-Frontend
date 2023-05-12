@@ -216,7 +216,7 @@ const queryRelation = async (query: string, type: number, page: number, mode: bo
           value: item.Id
         }
       })
-      total[type] = res.data.result.totalCount 
+      total[type] = res.data.result.totalCount+len
     }
     if (mode)
       options[type].push(...res.data.result.content.map((item) => {
@@ -231,16 +231,16 @@ const queryRelation = async (query: string, type: number, page: number, mode: bo
         item.disabled = true
       }
     })
-    //在头部插入selected
-    //options[type].unshift(...selected)
-    //去重
-    options[type] = Array.from(new Set(options[type].map((item) => {
-      return item.value
-    }))).map((item) => {
-      return options[type].find((item2) => {
-        return item2.value == item
-      })!
+    //在options里面去除selected里面有的
+    options[type] = options[type].filter((item) => {
+      return !selected.some((item2) => {
+        return item.value == item2.value
+      })
     })
+    //在头部插入selected
+    options[type].unshift(...selected)
+    //去重
+    
 
     return Promise.resolve(true);
   }
@@ -427,6 +427,9 @@ watch(
   },
   { deep: true }
 );
+const initRelation=()=>{
+  
+}
 queryRelation('', 0, 1).then(() => {
   loading[0] = false
 })
