@@ -17,7 +17,7 @@ import type { Agent, Response, SimpleResponse } from "@/types/index";
 import type { AxiosResponse } from "axios";
 import { useMessage, type DropdownOption, type DropdownDividerOption } from "naive-ui";
 import { Edit } from "@vicons/carbon";
-import {useRouter} from 'vue-router'
+import { useRouter } from 'vue-router'
 const router = useRouter()
 const data = ref<Agent[]>([]);
 const loading = ref(true);
@@ -57,7 +57,7 @@ const handleSelect = (key: string) => {
       })
       break
     case 'edit':
-      router.push('/agents/' + pointer.value+'/edit')
+      router.push('/agents/' + pointer.value + '/edit')
       break
   }
   showDropdown.value = false

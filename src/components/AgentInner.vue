@@ -81,7 +81,7 @@
           :reset-menu-on-options-change="false" @blur="blur(1)" :clear-filter-after-select="false"
           @search="(e: string) => handleSearch(e, 1)" @scroll="(e: Event) => handleScroll(e, 1)"></n-select></n-form-item>
     </TransitionGroup>
-    <n-button type="primary" @click="save">Save</n-button>
+    <n-button type="primary" @click="saveWrapper">Save</n-button>
     <n-button style="margin-left: 10px">Dry Run</n-button>
   </div>
 </template>
@@ -190,7 +190,7 @@ const queryRelation = async (query: string, type: number, page: number, mode: bo
     return Promise.resolve(false)
   const res: AxiosResponse<Response<simple>> = await axios.get('/agent/relationable', {
     params: {
-      id: props.ids,
+      id: props.ids != undefined ? props.ids : 0,
       keyword: query,
       type: type == 1 ? 'prev' : 'next',
       page: page,
@@ -216,7 +216,7 @@ const queryRelation = async (query: string, type: number, page: number, mode: bo
           value: item.Id
         }
       })
-      total[type] = res.data.result.totalCount+len
+      total[type] = res.data.result.totalCount + len
     }
     if (mode)
       options[type].push(...res.data.result.content.map((item) => {
@@ -240,7 +240,7 @@ const queryRelation = async (query: string, type: number, page: number, mode: bo
     //在头部插入selected
     options[type].unshift(...selected)
     //去重
-    
+
 
     return Promise.resolve(true);
   }
@@ -427,21 +427,71 @@ watch(
   },
   { deep: true }
 );
-const initRelation=()=>{
-  
+interface relationT {
+  agentId: number,
+  dsts: agentT[],
+  srcs: agentT[]
 }
-queryRelation('', 0, 1).then(() => {
-  loading[0] = false
-})
-queryRelation('', 1, 1).then(() => {
-  loading[1] = false
-})
-const save = () => {
-  nameRef.value
+interface simR {
+  code: number,
+  msg: string,
+  result: relationT
+}
+interface agentT {
+  Id: number,
+  Name: string,
+}
+const initRelation = () => {
+  if (props.mode == 'edit') {
+    axios.get("/agent-relation/for-edit", { params: { id: props.ids } }).then((res: AxiosResponse<simR>) => {
+      if (res.data.code == 200) {
+        relation.agentId = res.data.result.agentId
+        relation.dsts = res.data.result.dsts.map((item) => {
+          return item.Id
+        })
+        relation.srcs = res.data.result.srcs.map((item) => {
+          return item.Id
+        })
+        options[0] = res.data.result.dsts.map((item) => {
+          return {
+            label: item.Name,
+            value: item.Id
+          }
+        })
+        console.log(options[0])
+        options[1] = res.data.result.srcs.map((item) => {
+          return {
+            label: item.Name,
+            value: item.Id
+          }
+        })
+        queryRelation('', 0, 1).then(() => {
+          loading[0] = false
+        })
+        if (!isScheduleAgent(agent))
+          queryRelation('', 1, 1).then(() => {
+            loading[1] = false
+          })
+      }
+    })
+  }
+  else {
+    queryRelation('', 0, 1).then(() => {
+      loading[0] = false
+    })
+    if (!isScheduleAgent(agent))
+      queryRelation('', 1, 1).then(() => {
+        loading[1] = false
+      })
+  }
+}
+initRelation()
+const save = async (): Promise<number> => {
+  return await nameRef.value
     .validate()
     .then(() => {
       if (isScheduleAgent(agent))
-        cronRef.value[0]
+        return cronRef.value[0]
           .validate()
           .then(() => {
             const agentReal: AgentNew<string> = {
@@ -454,27 +504,23 @@ const save = () => {
               propJsonStr: JSON.stringify(agent.propJsonStr),
             };
             if (props.mode == 'add')
-              axios.put("/agent", agentReal).then((res) => {
+              return axios.put("/agent", agentReal).then((res) => {
                 if (res.data.code == 200) {
-                  message.success("Save success!");
-                  setTimeout(() => {
-                    router.push("/agents");
-                  }, 50);
+                  return Promise.resolve(res.data.result.id);
                 }
+                else return Promise.resolve(-1);
               });
             else if (props.mode == 'edit')
-              axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
+              return axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
                 if (res.data.code == 200) {
-                  message.success("Update success!");
-                  setTimeout(() => {
-                    router.push("/agents");
-                  }, 50);
+                  return Promise.resolve(0);
                 }
               });
+            else return Promise.resolve(-1);
           })
-          .catch(() => { });
+          .catch(() => { return Promise.resolve(-1); });
       else if (isHttpAgent(agent)) {
-        urlsRef.value[0].validate().then(() => {
+        return urlsRef.value[0].validate().then(() => {
           agent.propJsonStr.header = {};
           agent.propJsonStr.template = {};
           tempHeader.value.forEach((item) => {
@@ -494,31 +540,50 @@ const save = () => {
             propJsonStr: JSON.stringify(agent.propJsonStr),
           };
           if (props.mode == 'add')
-            axios.put("/agent", agentReal).then((res) => {
+            return axios.put("/agent", agentReal).then((res) => {
               if (res.data.code == 200) {
-                message.success("Save success!");
-                setTimeout(() => {
-                  router.push("/agents");
-                }, 50);
+                return Promise.resolve(res.data.result.id);
               }
             });
           else if (props.mode == 'edit')
-            axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
+            return axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
               if (res.data.code == 200) {
-                message.success("Update success!");
-                setTimeout(() => {
-                  router.push("/agents");
-                }, 50);
+                return Promise.resolve(0);
               }
             });
-        }).catch(() => { });
+          else return Promise.resolve(-1);
+        }).catch(() => { return Promise.resolve(-1); });
 
+      } else return Promise.resolve(-1);
+    })
+    .catch(() => { console.log('2'); return Promise.resolve(-1); });
+
+};
+const saveWrapper = () => {
+  save().then(async (resx: number) => {
+    //Update relation
+    if(resx == -1)
+      return
+    relation.agentId = resx == 0 ? props.ids as number : resx
+    await axios.post('/agent-relation', relation).then((res: AxiosResponse<Response<null>>) => {
+      if (res.data.code == 200) {
+        if (resx != 0) {
+          message.success('Add Success')
+          router.push('/agents')
+        }
+        else  {
+          message.success('Update Success')
+          router.push('/agents/')
+        }
       }
     })
-    .catch(() => { });
-};
+
+
+
+  })
+}
 watch(relation, (val) => {
-  
+
 }, { deep: true })
 </script>
 <style scoped>
