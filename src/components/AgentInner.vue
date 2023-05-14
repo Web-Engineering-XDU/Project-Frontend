@@ -82,7 +82,8 @@
           @search="(e: string) => handleSearch(e, 1)" @scroll="(e: Event) => handleScroll(e, 1)"></n-select></n-form-item>
     </TransitionGroup>
     <n-button type="primary" @click="saveWrapper">Save</n-button>
-    <n-button style="margin-left: 10px">Dry Run</n-button>
+    <n-button style="margin-left: 10px" @click="syncAndShow">Dry Run</n-button>
+    <DryRun :agent-info="agent" v-model:show="show" />
   </div>
 </template>
 <script setup lang="ts">
@@ -90,7 +91,7 @@ import { ref, reactive, watch, onMounted, nextTick } from "vue";
 import { useCounterStore } from "@/stores/counter";
 import type { AgentNew, HttpAgent, ScheduleAgent, Relations, Response } from "@/types";
 import { useMessage, type SelectOption } from "naive-ui";
-import RangeRenderVue from "./RangeRender.vue";
+import DryRun from './DryRun.vue'
 import { useRouter } from "vue-router";
 import type { AxiosResponse } from "axios";
 interface simple {
@@ -98,6 +99,7 @@ interface simple {
   Name: string
 }
 const loading = reactive([false, false]);
+const show = ref(false)
 const options = reactive<SelectOption[][]>([[], []]);
 interface keyValue {
   key: string;
@@ -128,6 +130,20 @@ const props = defineProps({
   data: Object,
   ids: Number
 });
+const syncAndShow = () => {
+  //把未和agent同步的agent信息更新
+  if (isHttpAgent(agent)) {
+    agent.propJsonStr.header = {}
+    agent.propJsonStr.template = {}
+    tempHeader.value.forEach((item) => {
+      agent.propJsonStr.header[item.key] = item.value
+    })
+    tempTemplate.value.forEach((item) => {
+      agent.propJsonStr.template[item.key] = item.value
+    })
+  }
+  show.value = true
+}
 const urlsRef = ref();
 const nameRef = ref();
 const query = reactive<Array<string>>(['', ''])
@@ -458,7 +474,6 @@ const initRelation = () => {
             value: item.Id
           }
         })
-        console.log(options[0])
         options[1] = res.data.result.srcs.map((item) => {
           return {
             label: item.Name,
@@ -486,7 +501,7 @@ const initRelation = () => {
   }
 }
 initRelation()
-const save = async (): Promise<number> => {
+const save = async (): Promise<number|string> => {
   return await nameRef.value
     .validate()
     .then(() => {
@@ -508,25 +523,28 @@ const save = async (): Promise<number> => {
                 if (res.data.code == 200) {
                   return Promise.resolve(res.data.result.id);
                 }
-                else return Promise.resolve(-1);
+                else return Promise.reject(res.data.msg);
               });
             else if (props.mode == 'edit')
               return axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
                 if (res.data.code == 200) {
                   return Promise.resolve(0);
                 }
+                else return Promise.reject(res.data.msg);
               });
-            else return Promise.resolve(-1);
+            else return Promise.reject();
           })
-          .catch(() => { return Promise.resolve(-1); });
+          .catch((res:any) => { return Promise.reject(res); });
       else if (isHttpAgent(agent)) {
         return urlsRef.value[0].validate().then(() => {
           agent.propJsonStr.header = {};
           agent.propJsonStr.template = {};
           tempHeader.value.forEach((item) => {
+            if(item.key!=''&&item.value!='')
             agent.propJsonStr.header[item.key] = item.value;
           });
           tempTemplate.value.forEach((item) => {
+            if(item.key!=''&&item.value!='')
             agent.propJsonStr.template[item.key] = item.value;
           });
 
@@ -544,34 +562,42 @@ const save = async (): Promise<number> => {
               if (res.data.code == 200) {
                 return Promise.resolve(res.data.result.id);
               }
+              else return Promise.reject(res.data.msg);
             });
           else if (props.mode == 'edit')
             return axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
               if (res.data.code == 200) {
                 return Promise.resolve(0);
               }
+              else return Promise.reject(res.data.msg);
             });
-          else return Promise.resolve(-1);
-        }).catch(() => { return Promise.resolve(-1); });
+          else return Promise.reject();
+        }).catch((res:any) => { return Promise.reject(res); });
 
-      } else return Promise.resolve(-1);
+      } else return Promise.reject();
     })
-    .catch(() => { console.log('2'); return Promise.resolve(-1); });
+    .catch((res:any) => {  return Promise.reject(res); });
 
 };
 const saveWrapper = () => {
-  save().then(async (resx: number) => {
+  save().then(async (resx: number|string) => {
     //Update relation
-    if(resx == -1)
+    if (resx == -1)
       return
-    relation.agentId = resx == 0 ? props.ids as number : resx
-    await axios.post('/agent-relation', relation).then((res: AxiosResponse<Response<null>>) => {
+    relation.agentId = (resx == 0 ? props.ids as number : resx) as number
+    //如果srcs或dsts为空，设置为[0]
+    const tempRelation=JSON.parse(JSON.stringify(relation))
+    if (tempRelation.srcs.length == 0)
+    tempRelation.srcs = [0]
+    if (tempRelation.dsts.length == 0)
+    tempRelation.dsts = [0]
+    await axios.post('/agent-relation', tempRelation).then((res: AxiosResponse<Response<null>>) => {
       if (res.data.code == 200) {
         if (resx != 0) {
           message.success('Add Success')
           router.push('/agents')
         }
-        else  {
+        else {
           message.success('Update Success')
           router.push('/agents/')
         }
@@ -580,7 +606,7 @@ const saveWrapper = () => {
 
 
 
-  })
+  }).catch((resxx) => { message.error(resxx)});
 }
 watch(relation, (val) => {
 

@@ -199,7 +199,7 @@ activeKey.value = window.location.pathname.split("/")[1];
   justify-content: center;
   border-bottom: 1px solid rgb(230, 230, 230);
   position: fixed;
-  z-index: 1000;
+
 }
 .container {
   width: var(--width);
@@ -208,7 +208,7 @@ activeKey.value = window.location.pathname.split("/")[1];
   justify-content: space-between;
   max-width: 1500px;
   position: relative;
-  z-index: -1;
+
 }
 .body {
   width: 100vw;

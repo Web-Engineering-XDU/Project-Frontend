@@ -2,13 +2,19 @@
 import { ref } from "vue";
 import { useCounterStore } from "../stores/counter";
 import type { AxiosResponse } from "axios";
-import type { Agent, Response } from "../types/index";
+import type { Agent, Event, Response } from "../types/index";
 const store = useCounterStore();
 const agentCount = ref(0);
+const eventCount = ref(0);
 useCounterStore()
   .Axios.get("/agent?page=0&number=0")
   .then((res: AxiosResponse<Response<Agent>>) => {
     agentCount.value = res.data.result.totalCount;
+  });
+  useCounterStore()
+  .Axios.get("/event?page=0&number=0")
+  .then((res: AxiosResponse<Response<Event>>) => {
+    eventCount.value = res.data.result.totalCount;
   });
 </script>
 
@@ -36,7 +42,7 @@ useCounterStore()
       </n-button>
       <div style="margin-top: 50px">
         Your agents have recorded
-        <div style="display: inline-block; color: #2080f0">{{ 1 }}</div>
+        <div style="display: inline-block; color: #2080f0">{{ eventCount }}</div>
         events recently and {{ 2 }} events in total.
       </div>
       <n-button strong secondary type="primary" style="margin-top: 10px"> View </n-button>

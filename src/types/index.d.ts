@@ -65,5 +65,11 @@ export interface Relations {
     srcs: number[]
 }
 export interface Event{
-    
+    createdAt: string,
+    deleteAt: string,
+    error: boolean,
+    id: number,
+    jsonStr: string,
+    log: string,
+    srcAgentId: number
 }

@@ -7,7 +7,7 @@
     <n-dropdown placement="bottom-start" trigger="manual" :x="x" :y="y" :options="options" :show="showDropdown"
       :on-clickoutside="onClickoutside" @select="handleSelect" />
     <n-button @click="$router.push('/agents/add')">New Agent</n-button>
-
+    <DryRun v-model:show="showModal" :agentInfo="(agentInfo as Agent)" />
   </div>
 </template>
 <script setup lang="tsx">
@@ -18,11 +18,28 @@ import type { AxiosResponse } from "axios";
 import { useMessage, type DropdownOption, type DropdownDividerOption } from "naive-ui";
 import { Edit } from "@vicons/carbon";
 import { useRouter } from 'vue-router'
+import DryRun from "@/components/DryRun.vue";
 const router = useRouter()
 const data = ref<Agent[]>([]);
 const loading = ref(true);
 const store = useCounterStore();
 const axios = store.Axios;
+
+const agentInfo = ref<Agent>({
+  id: 0,
+  enable: false,
+  typeId: 0,
+  eventForever: false,
+  eventMaxAge: 0,
+  propJsonStr: "",
+  allowInput: false,
+  allowOutput: false,
+  name: "",
+  description: "",
+  createAt: "",
+  typeName: "",
+});
+const showModal = ref(false)
 const showDropdown = ref(false)
 const x = ref(0)
 const y = ref(0)
@@ -58,6 +75,10 @@ const handleSelect = (key: string) => {
       break
     case 'edit':
       router.push('/agents/' + pointer.value + '/edit')
+      break
+    case 'dry':
+      agentInfo.value = (data.value.find((x) => x.id == pointer.value) as Agent)
+      showModal.value = true
       break
   }
   showDropdown.value = false
