@@ -6,23 +6,31 @@
     <div class="form-box">
       <div style="width: 100%">
         <n-form-item label="Agent Type">
-          <n-select :options="options"></n-select>
+          <n-select v-model:value="tempid" :options="options"></n-select>
         </n-form-item>
       </div>
-      <div style="width: 100%"></div>
+      <div style="width: 100%">
+        <AgentInner mode="add" :id="Number(tempid)" v-if="tempid != ''" />
+      </div>
+      <n-divider/>
       <n-button @click="$router.go(-1)"
         >Back<template #icon>
           <n-icon> <ArrowBack /> </n-icon></template
       ></n-button>
     </div>
+    <div style="width: calc(100% - 500px); display: inline-block"></div>
   </div>
 </template>
 <script setup lang="tsx">
+import AgentInner from "@/components/AgentInner.vue";
 import { ArrowBackFilled as ArrowBack } from "@vicons/material";
-import { ref } from "vue";
+import detector from "element-resize-detector";
+import { ref, reactive, watch } from "vue";
+const tempid = ref("");
+const det = detector();
 const options = ref([
-  { label: "Schedule Agent", value: "1" },
-  { label: "Http Agent", value: "2" },
+  { label: "Schedule Agent", value: 1 },
+  { label: "Http Agent", value: 2 },
 ]);
 </script>
 <style scoped>
@@ -37,7 +45,7 @@ const options = ref([
 }
 
 .form-box {
-  width: 500px;
+  width: 600px;
   max-width: 90vw;
   flex-wrap: wrap;
   display: inline-flex;

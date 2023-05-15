@@ -5,12 +5,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    "ignoreDeprecations": "5.0"
   },
 
   "references": [
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+
 }

@@ -18,38 +18,59 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue')
     },
     {
-      path:'/user',
-      name:'user',
-      children:[
+      path: '/user',
+      name: 'user',
+      children: [
         {
-          path:'login',
-          name:'login',
-          component:()=>import('../views/LogIn.vue')
+          path: 'login',
+          name: 'login',
+          component: () => import('../views/LogIn.vue')
         },
         {
-          path:'signup',
-          name:'signup',
-          component:()=>import('../views/SignUp.vue')
-        }]
+          path: 'signup',
+          name: 'signup',
+          component: () => import('../views/SignUp.vue')
+        }
+      ]
     },
     {
-      path:'/agents',
-      
-      children:[
+      path: '/agents',
+
+      children: [
         {
-          path:'',
-          name:'agents',
-          component:()=>import('../views/AgentsMain.vue'),
+          path: '',
+          name: 'agents',
+          component: () => import('../views/AgentsMain.vue')
         },
         {
-          path:'add',
-          name:'add',
-          component:()=>import('../views/AddAgent.vue')
+          path: 'add',
+          name: 'add',
+          component: () => import('../views/AddAgent.vue')
         },
         {
-          path:':id',
-          name:'agentdetail',
-          component:()=>import('../views/AgentDetail.vue')
+          path: ':id',
+          children: [
+            {
+              path: '',
+              name: 'agentdetail',
+              component: () => import('../views/AgentDetail.vue')
+            },
+            {
+              path: 'edit',
+              name: 'edit',
+              component: () => import('../views/EditAgent.vue')
+            }
+          ]
+        }
+      ]
+    },
+    {
+      path: '/events',
+      children: [
+        {
+          path: '',
+          name: 'events',
+          component: () => import('../views/EventsMain.vue')
         }
       ]
     }
