@@ -1,7 +1,11 @@
 <template>
     <div class="about">
-        <n-h1>Your events</n-h1>
-        <n-divider />
+    <div v-if="route.query.id!=undefined" style="padding-bottom: 20px;">
+        <n-skeleton v-if="loading" text style="width:200px" /> 
+      <n-page-header v-else :title="'Events of '+route.query.name" @back="$router.go(-1)"></n-page-header>
+    </div>
+        <n-h1 v-else>Your events</n-h1>
+        <n-divider  v-if="route.query.id==undefined"/>
         <n-data-table remote ref="table" :columns="columns" :data="data" :loading="loading" :pagination="pagination"
             :row-props="rowProps" :row-key="rowKey" @update:page="handlePageChange"></n-data-table>
         <n-dropdown placement="bottom-start" trigger="manual" :x="x" :y="y" :options="options" :show="showDropdown"
@@ -14,7 +18,10 @@ import { useCounterStore } from "../stores/counter";
 import type { AxiosResponse } from "axios";
 import type { Event, Response, SimpleResponse } from "../types/index";
 import type { DataTableColumn, DropdownDividerOption, DropdownOption } from "naive-ui";
-import router from "@/router";
+import { useRouter,useRoute } from "vue-router";
+const route=useRoute()
+console.log(route.query.id)
+const router = useRouter();
 const axios = useCounterStore().Axios;
 const showDropdown = ref(false)
 const loading = ref(true);
@@ -54,12 +61,19 @@ const columns: DataTableColumn[] = [
     {
         title: "Source",
         key: "src",
-        width: 20,
+        width: 54,
+        render: (rowData: any) => {
+            return <n-a onClick={()=>router.push('/agents/'+rowData.srcAgentId)}>{rowData.srcAgentName}</n-a>;
+        },
     },
     {
         title: "Created At",
         key: "createAt",
-        width: 20,
+        width: 70,
+        render: (rowData: any) => {
+            //格式化日期
+            return  new Date(rowData.createAt).toLocaleString();
+        },
     },
     {
         title: "Payload",
@@ -102,6 +116,7 @@ const query = (page: number, pageSize: number) => {
         params: {
             page,
             number: pageSize,
+            id: route.query.id?route.query.id:undefined,
         },
     });
 };

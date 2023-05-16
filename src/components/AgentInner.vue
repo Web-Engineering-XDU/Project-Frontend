@@ -16,15 +16,15 @@
         </n-switch></n-form-item>
       <n-form-item :key="3" v-if="!isScheduleAgent(agent)" label="Event Forever"><n-switch size="large"
           v-model:value="agent.eventForever">
-          <template #checked> Events Destroyed Sometime </template>
+          <template #checked><div style="text-align: center; padding-right: 13px"> Events Never Destroyed</div></template>
           <template #unchecked>
-            <div style="text-align: center; padding-left: 13px">
-              Events Never Destroyed
+            <div >
+              Events Destroyed Sometime
             </div>
           </template>
         </n-switch>
       </n-form-item>
-      <n-form-item :key="4" v-if="agent.eventForever && !isScheduleAgent(agent)" label="Event Max Age"><n-input-number
+      <n-form-item :key="4" v-if="!agent.eventForever && !isScheduleAgent(agent)" label="Event Max Age"><n-input-number
           :min="0" style="margin-right: 6px; width: calc(33% - 4px)" v-model:value="time[0]"
           placeholder="Day"></n-input-number><n-input-number :min="0" style="margin-right: 6px; width: calc(33% - 4px)"
           v-model:value="time[1]" placeholder="Minute"></n-input-number><n-input-number :min="0"
@@ -540,11 +540,11 @@ const save = async (): Promise<number|string> => {
           agent.propJsonStr.header = {};
           agent.propJsonStr.template = {};
           tempHeader.value.forEach((item) => {
-            if(item.key!=''&&item.value!='')
+            if(item.key!='')
             agent.propJsonStr.header[item.key] = item.value;
           });
           tempTemplate.value.forEach((item) => {
-            if(item.key!=''&&item.value!='')
+            if(item.key!='')
             agent.propJsonStr.template[item.key] = item.value;
           });
 
@@ -588,9 +588,9 @@ const saveWrapper = () => {
     //如果srcs或dsts为空，设置为[0]
     const tempRelation=JSON.parse(JSON.stringify(relation))
     if (tempRelation.srcs.length == 0)
-    tempRelation.srcs = [0]
+    tempRelation.srcs = []
     if (tempRelation.dsts.length == 0)
-    tempRelation.dsts = [0]
+    tempRelation.dsts = []
     await axios.post('/agent-relation', tempRelation).then((res: AxiosResponse<Response<null>>) => {
       if (res.data.code == 200) {
         if (resx != 0) {

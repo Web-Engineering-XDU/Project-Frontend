@@ -1,5 +1,3 @@
-import { selectors } from './index.d';
-import { Agent } from './../../types/index';
 
 export interface Agent {
     id: number
@@ -72,4 +70,5 @@ export interface Event{
     jsonStr: string,
     log: string,
     srcAgentId: number
+    srcAgentName: string,
 }

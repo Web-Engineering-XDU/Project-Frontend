@@ -11,8 +11,12 @@
 <script setup lang="tsx">
 import { ref, watch } from "vue";
 import { useCounterStore } from "@/stores/counter";
+import {useMessage} from 'naive-ui'
+import type { AxiosResponse } from "axios";
+import type { Response } from "@/types";
 const axios = useCounterStore().Axios
 const showModal = ref(false)
+const message=useMessage()
 const props = defineProps({
     agentInfo: {
         type: Object,
@@ -45,7 +49,10 @@ const handleDryRun = () => {
         agentTypeId: props.agentInfo.typeId,
         event: obj
     }).then((res) => {
-        console.log(res)
+        if(res.data.code==200)
+        message.info('Dry run success:'+JSON.stringify(res.data.result))
+        else
+        message.error('Dry run failed:'+res.data.msg)
     })
 }
 </script>
