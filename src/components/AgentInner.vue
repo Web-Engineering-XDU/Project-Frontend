@@ -38,10 +38,10 @@
             <n-form-item :ref="key == 'urls' ? 'urlsRef' : undefined"
               v-if="typeof item[0] !== 'object' && key != 'selectors'" :label="splitUpper(key)"
               :rule="key == 'urls' ? ruleUrl : undefined">
-              <n-dynamic-input v-model:value="agent.propJsonStr[key]" :placeholder="splitUpper('pleaseInput')" :min="1" />
+              <n-dynamic-input v-if="isHttpAgent(agent)" v-model:value="agent.propJsonStr[key]" :placeholder="splitUpper('pleaseInput')" :min="1" />
             </n-form-item>
             <n-form-item v-else :label="splitUpper(key)">
-              <n-dynamic-input v-model:value="agent.propJsonStr[key]" :min="0" :on-create="onCreate">
+              <n-dynamic-input v-if="isHttpAgent(agent)"  v-model:value="agent.propJsonStr[key]" :min="0" :on-create="onCreate">
                 <template #default="{ value }">
                   <n-input v-model:value="value.varName" :placeholder="splitUpper('varName')" />
                   <n-input v-model:value="value.selectorType" :placeholder="splitUpper('selectorType')"
@@ -64,12 +64,12 @@
           </template>
         </template>
         <n-form-item :ref="key == 'cron' ? 'cronRef' : undefined" v-else :label="splitUpper(key)"
-          :rule="key == 'cron' ? rule : undefined"><n-select v-if="key == 'docType' || key == 'method'"
+          :rule="key == 'cron' ? rule : undefined"><n-select v-if="isHttpAgent(agent)&&(key == 'docType' || key == 'method')" 
             v-model:value="agent.propJsonStr[key]" :options="key == 'docType' ? typeOpt : methodOpt"
             :filterable="key == 'method'" :tag="key == 'method'"></n-select>
-          <n-input :type="key == 'body' ? 'textarea' : ''" v-else-if="typeof item == 'string'"
+          <n-input :type="key == 'body' ? 'textarea' : ''" v-else-if="typeof item == 'string'&&isHttpAgent(agent)" 
             v-model:value="agent.propJsonStr[key]" /><n-switch v-model:value="agent.propJsonStr[key]"
-            v-else-if="typeof item == 'boolean'"></n-switch></n-form-item>
+            v-else-if="typeof item == 'boolean'&&isHttpAgent(agent)"></n-switch></n-form-item>
       </template>
       <n-h3 style="margin-top: -10px" :key="111">Relations</n-h3>
       <n-form-item :label="'Destination'" :key="121"><n-select v-model:value="relation.dsts" multiple filterable
