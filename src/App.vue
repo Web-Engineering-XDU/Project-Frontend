@@ -36,7 +36,7 @@ if (store.logged) {
         Events
       </RouterLink>
     ),
-    key: "logout",
+    key: "events",
   });
 }
 watch(
@@ -65,6 +65,7 @@ watch(
 watch(
   () => router.currentRoute.value.path,
   (path) => {
+    console.log(path, path.split("/")[1])
     activeKey.value = path.split("/")[1];
   }
 );
@@ -151,12 +152,13 @@ activeKey.value = window.location.pathname.split("/")[1];
             </div>
           </div>
         </n-layout-content>
-        <div style="display: flex; justify-content: center">
+        <div style="display: flex; justify-content: center;margin-right:10px">
           <n-h4
             style="
               text-align: right;
               margin-top: 10px;
               height: 30px;
+              
               margin-bottom: 10px;
               width: var(--width);
             "

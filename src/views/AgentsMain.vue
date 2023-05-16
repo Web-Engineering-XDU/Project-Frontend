@@ -85,7 +85,7 @@ const handleSelect = (key: string) => {
 }
 const options: Array<DropdownOption | DropdownDividerOption> = [
   {
-    label: 'Edit',
+    label: 'Edit agent',
     key: 'edit',
   },
   {
@@ -99,7 +99,7 @@ const options: Array<DropdownOption | DropdownDividerOption> = [
   },
   {
     key: 'del',
-    label: () => <><n-text type='error'>Delete</n-text></>
+    label: () => <><n-text type='error'>Delete agent</n-text></>
   }
 ]
 
@@ -125,7 +125,7 @@ const columns = ref([
     render: (rowData: Agent) => {
       return (
         <>
-          <n-a style="height:50%;">{rowData.name}</n-a>
+          <n-a style="height:50%;" onClick={()=>router.push('/agents/'+rowData.id)}>{rowData.name}</n-a>
           <div style="height:50%;">
             <n-text style="font-size:12px" depth="3">
               {rowData.typeName}
