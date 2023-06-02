@@ -65,7 +65,6 @@ watch(
 watch(
   () => router.currentRoute.value.path,
   (path) => {
-    console.log(path, path.split("/")[1])
     activeKey.value = path.split("/")[1];
   }
 );
