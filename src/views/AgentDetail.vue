@@ -69,7 +69,6 @@ axios.get('/agent', { params: { id: route.params.id,page:1,number:1 } }).then((r
   axios.get('/event', { params: {id: route.params.id } }).then((res: AxiosResponse<Response<Event>>) => {
     count.value=res.data.result.totalCount
     loading.value = false
-    console.log(res.data)
   })
 })
 const timeConvert = (time: number) => {

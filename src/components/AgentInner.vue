@@ -573,7 +573,7 @@ const save = async (): Promise<number | string> => {
         return Promise.reject();
       }
     }else if(isRssAgent(agent)) {
-      console.log(agent)
+      
       const agentReal: AgentNew<string> = {
           name: agent.name,
           enable: agent.enable,

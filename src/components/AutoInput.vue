@@ -54,9 +54,9 @@ const isTypeProps = (props: any) => {
 }
 const isSimpleObject = (xs: any) => {
     if (typeof xs === "object" && !Array.isArray(Object.values(xs)[0])) {
-        console.log(1)
+        
         if (Object.values(xs).length == 0) {
-            console.log(2)
+            
             return true
         }
     }
@@ -64,11 +64,11 @@ const isSimpleObject = (xs: any) => {
 watch(
     () => props.renderData,
     (newVal: TypeProps) => {
-        console.log('sdx')
+        
         if((JSON.stringify(newVal))==(JSON.stringify(x))){
             return
         }
-        console.log('sd')
+        
         Object.assign(x, reactive(newVal))
         //给templist内部重新赋值
         for(let i in templist.value){
@@ -96,7 +96,7 @@ watch(
             return
         }
         emit('update:renderData', JSON.parse(JSON.stringify(newVal)))
-        console.log('update')
+        
     },
     { deep: true }
 )
@@ -104,7 +104,7 @@ const tempTemp=ref<Ref<record>[]>([])
 watch(
     () => templist.value,
     (newVal: Ref<record>[]) => {
-        console.log('Started')
+        
         //阻止循环调用
         if(templist.value.length==0){
             return
@@ -125,7 +125,7 @@ watch(
         for(let i of newVal){
             //递归查找对应location和key的变量
             const result=search(i.value.location,i.value.key,x)
-            console.log(result)
+            
             if(result==false){
                 continue
             }

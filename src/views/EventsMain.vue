@@ -20,7 +20,6 @@ import type { Event, Response, SimpleResponse } from "../types/index";
 import type { DataTableColumn, DropdownDividerOption, DropdownOption } from "naive-ui";
 import { useRouter,useRoute } from "vue-router";
 const route=useRoute()
-console.log(route.query.id)
 const router = useRouter();
 const axios = useCounterStore().Axios;
 const showDropdown = ref(false)
