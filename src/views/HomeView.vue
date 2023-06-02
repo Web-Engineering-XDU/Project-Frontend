@@ -43,11 +43,10 @@ useCounterStore()
       <div style="margin-top: 50px">
         Your agents have recorded
         <div style="display: inline-block; color: #2080f0">{{ eventCount }}</div>
-        events recently and {{ 2 }} events in total.
+        events in total.
       </div>
       <n-button strong secondary type="primary" style="margin-top: 10px" @click="$router.push('/events')"> View </n-button>
-      <n-h3 style="margin-top: 60px">Recent event</n-h3>
-      Not found.
+
     </div>
     <div v-else style="padding-left: 10vw; padding-right: 10vw">
       <n-h1 prefix="bar" type="info">

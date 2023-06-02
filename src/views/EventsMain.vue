@@ -8,7 +8,7 @@
         <n-divider  v-if="route.query.id==undefined"/>
         <n-data-table remote ref="table" :columns="columns" :data="data" :loading="loading" :pagination="pagination"
             :row-props="rowProps" :row-key="rowKey" @update:page="handlePageChange"></n-data-table>
-        <n-dropdown placement="bottom-start" trigger="manual" :x="x" :y="y" :options="options" :show="showDropdown"
+        <n-dropdown placement="bottom-start" trigger="manual" :x="x" :y="y" :options="options" v-if="false" :show="showDropdown"
             :on-clickoutside="onClickoutside" @select="handleSelect" />
     </div>
 </template>

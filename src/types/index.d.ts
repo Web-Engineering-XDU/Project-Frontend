@@ -37,6 +37,30 @@ export interface ScheduleAgent {
     cron: string
 
 }
+/*{
+    "title": "feed标题",
+    "link": "feed链接",
+    "description": "feed简介",
+    "author": "feed管理者",
+    "template": {
+      "title": "{{*item标题}}",
+      "link": "{{*item链接}}",
+      "description": "{{*item简介}}",
+      "author": "{{*item内容原作者}}"
+    }
+  }*/
+export interface RssAgent{
+    title: string,
+    link: string,
+    description: string,
+    author: string,
+    template: {
+        title: string,
+        link: string,
+        description: string,
+        author: string
+    }
+}
 export interface selectors {
     varName: string,
     selectorType: string,

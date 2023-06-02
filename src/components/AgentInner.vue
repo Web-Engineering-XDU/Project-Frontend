@@ -16,9 +16,11 @@
         </n-switch></n-form-item>
       <n-form-item :key="3" v-if="!isScheduleAgent(agent)" label="Event Forever"><n-switch size="large"
           v-model:value="agent.eventForever">
-          <template #checked><div style="text-align: center; padding-right: 13px"> Events Never Destroyed</div></template>
+          <template #checked>
+            <div style="text-align: center; padding-right: 13px"> Events Never Destroyed</div>
+          </template>
           <template #unchecked>
-            <div >
+            <div>
               Events Destroyed Sometime
             </div>
           </template>
@@ -32,45 +34,7 @@
       <n-form-item :key="5" label="Description"><n-input type="textarea" v-model:value="agent.description"></n-input>
       </n-form-item>
       <n-h3 style="margin-top: -10px" :key="6">Props</n-h3>
-      <template v-for="(item, key) of agent!.propJsonStr" :key="key">
-        <template v-if="typeof item == 'object'">
-          <template v-if="((item as any) instanceof Array)">
-            <n-form-item :ref="key == 'urls' ? 'urlsRef' : undefined"
-              v-if="typeof item[0] !== 'object' && key != 'selectors'" :label="splitUpper(key)"
-              :rule="key == 'urls' ? ruleUrl : undefined">
-              <n-dynamic-input v-if="isHttpAgent(agent)" v-model:value="agent.propJsonStr[key]" :placeholder="splitUpper('pleaseInput')" :min="1" />
-            </n-form-item>
-            <n-form-item v-else :label="splitUpper(key)">
-              <n-dynamic-input v-if="isHttpAgent(agent)"  v-model:value="agent.propJsonStr[key]" :min="0" :on-create="onCreate">
-                <template #default="{ value }">
-                  <n-input v-model:value="value.varName" :placeholder="splitUpper('varName')" />
-                  <n-input v-model:value="value.selectorType" :placeholder="splitUpper('selectorType')"
-                    style="margin-left: 10px" />
-                  <n-input v-model:value="value.selectorContent" :placeholder="splitUpper('selectorContent')"
-                    style="margin-left: 10px" />
-                </template>
-              </n-dynamic-input>
-            </n-form-item>
-          </template>
-          <template v-else>
-            <n-form-item :label="splitUpper(key)">
-              <n-dynamic-input v-if="key == 'header'" v-model:value="tempHeader" :min="0" preset="pair"
-                key-placeholder="Key" value-placeholder="Value">
-              </n-dynamic-input>
-              <n-dynamic-input v-if="key == 'template'" v-model:value="tempTemplate" :min="0" preset="pair"
-                key-placeholder="Key" value-placeholder="Value">
-              </n-dynamic-input>
-            </n-form-item>
-          </template>
-        </template>
-        <n-form-item :ref="key == 'cron' ? 'cronRef' : undefined" v-else :label="splitUpper(key)"
-          :rule="key == 'cron' ? rule : undefined"><n-select v-if="isHttpAgent(agent)&&(key == 'docType' || key == 'method')" 
-            v-model:value="agent.propJsonStr[key]" :options="key == 'docType' ? typeOpt : methodOpt"
-            :filterable="key == 'method'" :tag="key == 'method'"></n-select>
-          <n-input :type="key == 'body' ? 'textarea' : ''" v-else-if="typeof item == 'string'&&isHttpAgent(agent)" 
-            v-model:value="agent.propJsonStr[key]" /><n-switch v-model:value="agent.propJsonStr[key]"
-            v-else-if="typeof item == 'boolean'&&isHttpAgent(agent)"></n-switch></n-form-item>
-      </template>
+      <auto-input :key="7" :render-data="(agent.propJsonStr as any)" @update:render-data="(e) => agent.propJsonStr = e" />
       <n-h3 style="margin-top: -10px" :key="111">Relations</n-h3>
       <n-form-item :label="'Destination'" :key="121"><n-select v-model:value="relation.dsts" multiple filterable
           :options="options[0]" :loading="loading[0]" clearable remote :clear-filter-after-select="false"
@@ -89,9 +53,10 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, nextTick } from "vue";
 import { useCounterStore } from "@/stores/counter";
-import type { AgentNew, HttpAgent, ScheduleAgent, Relations, Response } from "@/types";
+import type { AgentNew, HttpAgent, ScheduleAgent, Relations, Response, RssAgent } from "@/types";
 import { useMessage, type SelectOption } from "naive-ui";
 import DryRun from './DryRun.vue'
+import AutoInput from './AutoInput.vue'
 import { useRouter } from "vue-router";
 import type { AxiosResponse } from "axios";
 interface simple {
@@ -106,12 +71,17 @@ interface keyValue {
   value: string;
 }
 const isHttpAgent = (
-  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>
+  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>|AgentNew<RssAgent>
 ): Agent is AgentNew<HttpAgent> => {
   return Agent.typeId == 2;
 };
+const isRssAgent = (
+  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>|AgentNew<RssAgent>
+): Agent is AgentNew<RssAgent> => {
+  return Agent.typeId == 4;
+};
 const isScheduleAgent = (
-  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>
+  Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>|AgentNew<RssAgent>
 ): Agent is AgentNew<ScheduleAgent> => {
   return Agent.typeId == 1;
 };
@@ -279,7 +249,7 @@ const ruleUrl = ref({
 })
 const cronRef = ref();
 const time = reactive<Number[]>([null as unknown as number, null as unknown as number, null as unknown as number]);
-function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpAgent> {
+function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpAgent>|AgentNew<RssAgent> {
   if (id === 1) {
     return reactive<AgentNew<ScheduleAgent>>({
       name: "",
@@ -292,7 +262,7 @@ function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpA
         cron: "",
       },
     });
-  } else {
+  } else if(id==2) {
     return reactive<AgentNew<HttpAgent>>({
       name: "",
       enable: false,
@@ -310,6 +280,28 @@ function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpA
         template: {},
         docType: "json",
         selectors: [],
+      },
+    });
+  }
+  else {
+    return reactive<AgentNew<RssAgent>>({
+      name: "",
+      enable: false,
+      typeId: 4,
+      description: "",
+      eventForever: false,
+      eventMaxAge: 0,
+      propJsonStr: {
+        title: "",
+        description: "",
+        link: "",
+        author: "",
+        template: {
+          title: "",
+          description: "",
+          link: "",
+          author: "",
+        },
       },
     });
   }
@@ -501,112 +493,151 @@ const initRelation = () => {
   }
 }
 initRelation()
-const save = async (): Promise<number|string> => {
-  return await nameRef.value
-    .validate()
-    .then(() => {
-      if (isScheduleAgent(agent))
-        return cronRef.value[0]
-          .validate()
-          .then(() => {
-            const agentReal: AgentNew<string> = {
-              name: agent.name,
-              enable: agent.enable,
-              typeId: agent.typeId,
-              description: agent.description,
-              eventForever: agent.eventForever,
-              eventMaxAge: agent.eventMaxAge,
-              propJsonStr: JSON.stringify(agent.propJsonStr),
-            };
-            if (props.mode == 'add')
-              return axios.put("/agent", agentReal).then((res) => {
-                if (res.data.code == 200) {
-                  return Promise.resolve(res.data.result.id);
-                }
-                else return Promise.reject(res.data.msg);
-              });
-            else if (props.mode == 'edit')
-              return axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
-                if (res.data.code == 200) {
-                  return Promise.resolve(0);
-                }
-                else return Promise.reject(res.data.msg);
-              });
-            else return Promise.reject();
-          })
-          .catch((res:any) => { return Promise.reject(res); });
-      else if (isHttpAgent(agent)) {
-        return urlsRef.value[0].validate().then(() => {
-          agent.propJsonStr.header = {};
-          agent.propJsonStr.template = {};
-          tempHeader.value.forEach((item) => {
-            if(item.key!='')
-            agent.propJsonStr.header[item.key] = item.value;
-          });
-          tempTemplate.value.forEach((item) => {
-            if(item.key!='')
-            agent.propJsonStr.template[item.key] = item.value;
-          });
+const save = async (): Promise<number | string> => {
+  try {
+    await nameRef.value.validate();
+    if (isScheduleAgent(agent)) {
+      if (cronValidate(agent.propJsonStr.cron)) {
+        const agentReal: AgentNew<string> = {
+          name: agent.name,
+          enable: agent.enable,
+          typeId: agent.typeId,
+          description: agent.description,
+          eventForever: agent.eventForever,
+          eventMaxAge: agent.eventMaxAge,
+          propJsonStr: JSON.stringify(agent.propJsonStr),
+        };
 
-          const agentReal: AgentNew<string> = {
-            name: agent.name,
-            enable: agent.enable,
-            typeId: agent.typeId,
-            description: agent.description,
-            eventForever: agent.eventForever,
-            eventMaxAge: agent.eventMaxAge,
-            propJsonStr: JSON.stringify(agent.propJsonStr),
-          };
-          if (props.mode == 'add')
-            return axios.put("/agent", agentReal).then((res) => {
-              if (res.data.code == 200) {
-                return Promise.resolve(res.data.result.id);
-              }
-              else return Promise.reject(res.data.msg);
-            });
-          else if (props.mode == 'edit')
-            return axios.post("/agent", Object.assign({}, agentReal, { id: props.ids })).then((res) => {
-              if (res.data.code == 200) {
-                return Promise.resolve(0);
-              }
-              else return Promise.reject(res.data.msg);
-            });
-          else return Promise.reject();
-        }).catch((res:any) => { return Promise.reject(res); });
+        if (props.mode === 'add') {
+          const res = await axios.put("/agent", agentReal);
+          if (res.data.code === 200) {
+            return Promise.resolve(res.data.result.id);
+          } else {
+            return Promise.reject(res.data.msg);
+          }
+        } else if (props.mode === 'edit') {
+          const res = await axios.post("/agent", Object.assign({}, agentReal, { id: props.ids }));
+          if (res.data.code === 200) {
+            return Promise.resolve(0);
+          } else {
+            return Promise.reject(res.data.msg);
+          }
+        } else {
+          return Promise.reject();
+        }
+      } else {
+        message.error('Invalid Cron');
+        return Promise.reject();
+      }
+    } else if (isHttpAgent(agent)) {
+      if(agent.propJsonStr.urls.length==0){
+        message.error('Urls can not be empty')
+        return Promise.reject()
+      }
+      agent.propJsonStr.header = {};
+      agent.propJsonStr.template = {};
+      tempHeader.value.forEach((item) => {
+        if (item.key !== '')
+          agent.propJsonStr.header[item.key] = item.value;
+      });
+      tempTemplate.value.forEach((item) => {
+        if (item.key !== '')
+          agent.propJsonStr.template[item.key] = item.value;
+      });
 
-      } else return Promise.reject();
-    })
-    .catch((res:any) => {  return Promise.reject(res); });
+      const agentReal: AgentNew<string> = {
+        name: agent.name,
+        enable: agent.enable,
+        typeId: agent.typeId,
+        description: agent.description,
+        eventForever: agent.eventForever,
+        eventMaxAge: agent.eventMaxAge,
+        propJsonStr: JSON.stringify(agent.propJsonStr),
+      };
 
+      if (props.mode === 'add') {
+        const res = await axios.put("/agent", agentReal);
+        if (res.data.code === 200) {
+          return Promise.resolve(res.data.result.id);
+        } else {
+          return Promise.reject(res.data.msg);
+        }
+      } else if (props.mode === 'edit') {
+        const res = await axios.post("/agent", Object.assign({}, agentReal, { id: props.ids }));
+        if (res.data.code === 200) {
+          return Promise.resolve(0);
+        } else {
+          return Promise.reject(res.data.msg);
+        }
+      } else {
+        return Promise.reject();
+      }
+    }else if(isRssAgent(agent)) {
+      console.log(agent)
+      const agentReal: AgentNew<string> = {
+          name: agent.name,
+          enable: agent.enable,
+          typeId: agent.typeId,
+          description: agent.description,
+          eventForever: agent.eventForever,
+          eventMaxAge: agent.eventMaxAge,
+          propJsonStr: JSON.stringify(agent.propJsonStr),
+        };
+
+        if (props.mode === 'add') {
+          const res = await axios.put("/agent", agentReal);
+          if (res.data.code === 200) {
+            return Promise.resolve(res.data.result.id);
+          } else {
+            return Promise.reject(res.data.msg);
+          }
+        } else if (props.mode === 'edit') {
+          const res = await axios.post("/agent", Object.assign({}, agentReal, { id: props.ids }));
+          if (res.data.code === 200) {
+            return Promise.resolve(0);
+          } else {
+            return Promise.reject(res.data.msg);
+          }
+        } else {
+          return Promise.reject();
+        }
+    }
+    else {
+      return Promise.reject();
+    }
+  } catch (error) {
+    return Promise.reject(error);
+  }
 };
+
 const saveWrapper = () => {
-  save().then(async (resx: number|string) => {
+  save().then(async (resx: number | string) => {
     //Update relation
     if (resx == -1)
       return
     relation.agentId = (resx == 0 ? props.ids as number : resx) as number
     //如果srcs或dsts为空，设置为[0]
-    const tempRelation=JSON.parse(JSON.stringify(relation))
+    const tempRelation = JSON.parse(JSON.stringify(relation))
     if (tempRelation.srcs.length == 0)
-    tempRelation.srcs = []
+      tempRelation.srcs = []
     if (tempRelation.dsts.length == 0)
-    tempRelation.dsts = []
+      tempRelation.dsts = []
     await axios.post('/agent-relation', tempRelation).then((res: AxiosResponse<Response<null>>) => {
       if (res.data.code == 200) {
         if (resx != 0) {
           message.success('Add Success')
-          router.push('/agents')
+          router.back()
         }
         else {
           message.success('Update Success')
-          router.push('/agents/')
+          router.back()
         }
       }
     })
 
 
 
-  }).catch((resxx) => { message.error(resxx)});
+  }).catch((resxx) => { resxx!=''&&resxx!=undefined?message.error(resxx):null });
 }
 watch(relation, (val) => {
 
