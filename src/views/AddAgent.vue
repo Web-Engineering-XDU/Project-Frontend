@@ -31,6 +31,7 @@ const det = detector();
 const options = ref([
   { label: "Schedule Agent", value: 1 },
   { label: "Http Agent", value: 2 },
+  { label:'Rss Agent',value:4}
 ]);
 </script>
 <style scoped>

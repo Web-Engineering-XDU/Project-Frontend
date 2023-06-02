@@ -80,7 +80,7 @@ activeKey.value = window.location.pathname.split("/")[1];
           <n-menu class="menu" v-model:value="activeKey" mode="horizontal" :options="menuOptions" />
           <div class="right-box">
             <n-input
-              v-if="store.logged"
+              v-if="store.logged&&false"
               :class="style.phoneAdjust"
               size="small"
               v-model:value="search"

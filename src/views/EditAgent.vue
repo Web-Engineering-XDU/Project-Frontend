@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { useCounterStore } from "@/stores/counter";
 import { useRoute } from "vue-router";
-import type { Agent, AgentNew, Response, HttpAgent, ScheduleAgent } from "@/types/index";
+import type { Agent, AgentNew, Response, HttpAgent, ScheduleAgent,RssAgent } from "@/types/index";
 import { ArrowBackFilled as ArrowBack } from "@vicons/material";
 import type { AxiosResponse } from "axios";
 import { reactive, ref } from "vue";
@@ -60,6 +60,9 @@ axios.get('/agent', {
             case 2:
                 Object.assign(agent, reactive<AgentNew<HttpAgent>>(toJSON(res.data.result.content[0]) as AgentNew<HttpAgent>))
                 break
+            case 4:
+                Object.assign(agent, reactive<AgentNew<RssAgent>>(toJSON(res.data.result.content[0]) as AgentNew<RssAgent>))
+                break
         }
         ok.value=true
     }
@@ -69,8 +72,11 @@ const toJSON=(obj:any)=>{
     if(id=='1'){
         return obj as AgentNew<ScheduleAgent>
     }
-    else{
+    else if(id=='2'){
         return obj as AgentNew<HttpAgent>
+    }
+    else {
+        return obj as AgentNew<RssAgent>
     }
 }
 </script>

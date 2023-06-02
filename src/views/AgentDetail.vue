@@ -35,13 +35,16 @@
               :code="agent.propJsonStr != undefined ? JSON.stringify(JSON.parse(agent.propJsonStr), null, 2) : ''"
               language="json"></n-code></div>
         </n-list-item>
+        <n-list-item>
+          <n-space><n-button @click="router.push('/agents/'+route.params.id+'/edit')">Edit</n-button><n-button type="error" @click="deleteSelf">Delete</n-button></n-space>
+        </n-list-item>
       </n-list>
     </n-config-provider>
   </div>
 </template>
 <script setup lang="ts">
 import { useCounterStore } from '@/stores/counter'
-import type { Agent, Response,Event } from '@/types'
+import type { Agent, Response,Event, SimpleResponse } from '@/types'
 import type { AxiosResponse } from 'axios'
 import { useMessage } from 'naive-ui'
 import { ref } from 'vue'
@@ -80,5 +83,17 @@ const timeConvert = (time: number) => {
   if (hour > 0) return hour + ' hours ' + minute + ' minutes'
   if (minute > 0) return minute + ' minutes'+second + ' seconds'
   else return second + ' seconds'
+}
+const deleteSelf=()=>{
+  axios.delete('/agent', {
+        params: {
+          id: route.params.id
+        }
+      }).then((res: AxiosResponse<SimpleResponse>) => {
+        if (res.data.code == 200) {
+          message.success('Agent Deleted')
+          router.replace('/agents')
+        }
+      })
 }
 </script>
