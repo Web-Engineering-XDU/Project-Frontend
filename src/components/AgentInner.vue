@@ -34,7 +34,7 @@
       <n-form-item :key="5" label="Description"><n-input type="textarea" v-model:value="agent.description"></n-input>
       </n-form-item>
       <n-h3 style="margin-top: -10px" :key="6">Props</n-h3>
-      <auto-input :key="7" :render-data="(agent.propJsonStr as any)" @update:render-data="(e) => agent.propJsonStr = e" />
+      <auto-input v-if="showIn" :key="7" :render-data="(agent.propJsonStr as any)" @update:render-data="(e) => agent.propJsonStr = e" />
       <n-h3 style="margin-top: -10px" :key="111">Relations</n-h3>
       <n-form-item :label="'Destination'" :key="121"><n-select v-model:value="relation.dsts" multiple filterable
           :options="options[0]" :loading="loading[0]" clearable remote :clear-filter-after-select="false"
@@ -59,6 +59,7 @@ import DryRun from './DryRun.vue'
 import AutoInput from './AutoInput.vue'
 import { useRouter } from "vue-router";
 import type { AxiosResponse } from "axios";
+const showIn=ref(true)
 interface simple {
   Id: number,
   Name: string
@@ -70,6 +71,7 @@ interface keyValue {
   key: string;
   value: string;
 }
+
 const isHttpAgent = (
   Agent: AgentNew<HttpAgent> | AgentNew<ScheduleAgent>|AgentNew<RssAgent>
 ): Agent is AgentNew<HttpAgent> => {
@@ -114,6 +116,7 @@ const syncAndShow = () => {
   }
   show.value = true
 }
+
 const urlsRef = ref();
 const nameRef = ref();
 const query = reactive<Array<string>>(['', ''])
@@ -279,7 +282,11 @@ function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpA
         body: "",
         template: {},
         docType: "json",
-        selectors: [],
+        selectors: [{
+            varName:"",
+            selectorType:"",
+            selectorContent:""
+        }],
       },
     });
   }
@@ -394,6 +401,7 @@ if (props.mode == 'edit') {
 
   }
 }
+
 watch(
   () => props.id,
   (val: any) => {
@@ -639,6 +647,13 @@ const saveWrapper = () => {
 
   }).catch((resxx) => { resxx!=''&&resxx!=undefined?message.error(resxx):null });
 }
+watch(()=>agent.typeId,()=>{
+  console.log(1)
+  showIn.value=false
+  nextTick().then(()=>{
+    showIn.value=true
+  })
+})
 watch(relation, (val) => {
 
 }, { deep: true })

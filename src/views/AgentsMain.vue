@@ -69,6 +69,12 @@ const handleSelect = (key: string) => {
       }).then((res: AxiosResponse<SimpleResponse>) => {
         if (res.data.code == 200) {
           message.success('Agent Deleted')
+          console.log(pagination.pageCount,pagination.page)
+          if(pagination.page>=pagination.pageCount&&pagination.page>1){
+            pagination.page = pagination.page - 1
+            handlePageChange(pagination.page);
+            return
+          }
           handlePageChange(pagination.page);
         }
       })

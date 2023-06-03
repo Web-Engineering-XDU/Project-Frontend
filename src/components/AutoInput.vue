@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { useRender } from '@/useRender'
-import { ref, type PropType, reactive, type Ref,watch } from 'vue';
-import { NInput, NFormItem, NDynamicInput, NInputNumber, NSwitch } from 'naive-ui'
+import { ref, type PropType, reactive, type Ref, watch } from 'vue';
+import { NInput, NFormItem, NDynamicInput, NInputNumber, NSwitch, NSpace } from 'naive-ui'
 interface TypeProps {
     [key: string]: number | string | boolean | Array<string> | TypeProps | simpleObject
 }
@@ -17,10 +17,10 @@ const props = defineProps(
     }
 )
 const splitUpper = (str: string) => {
-  //把首字母大写并按大写字母用空格分割
-  return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
-    return str.toUpperCase();
-  });
+    //把首字母大写并按大写字母用空格分割
+    return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
+        return str.toUpperCase();
+    });
 };
 const templist = ref<Ref<record>[]>([])
 const x = reactive(JSON.parse(JSON.stringify(props.renderData)))
@@ -45,7 +45,7 @@ const isTypeProps = (props: any) => {
         }
         //is TypeProps
         else if (typeof Object.values(props)[t] === "object" && !Array.isArray(Object.values(props)[t])) {
-            if (isTypeProps(Object.values(props)[t])||(Object.values(props).length == 0 || typeof Object.values(props)[0] == 'string')) {
+            if (isTypeProps(Object.values(props)[t]) || (Object.values(props).length == 0 || typeof Object.values(props)[0] == 'string')) {
                 t++
             }
         }
@@ -54,9 +54,9 @@ const isTypeProps = (props: any) => {
 }
 const isSimpleObject = (xs: any) => {
     if (typeof xs === "object" && !Array.isArray(Object.values(xs)[0])) {
-        
+
         if (Object.values(xs).length == 0) {
-            
+
             return true
         }
     }
@@ -64,24 +64,24 @@ const isSimpleObject = (xs: any) => {
 watch(
     () => props.renderData,
     (newVal: TypeProps) => {
-        
-        if((JSON.stringify(newVal))==(JSON.stringify(x))){
+
+        if ((JSON.stringify(newVal)) == (JSON.stringify(x))) {
             return
         }
-        
+
         Object.assign(x, reactive(newVal))
         //给templist内部重新赋值
-        for(let i in templist.value){
-            const result=search(templist.value[i].value.location,templist.value[i].value.key,x)
-            if(result==false){
+        for (let i in templist.value) {
+            const result = search(templist.value[i].value.location, templist.value[i].value.key, x)
+            if (result == false) {
                 continue
             }
-            else{
-                const xresult=result as TypeProps
+            else {
+                const xresult = result as TypeProps
                 //根据xresult给templist.value[i].record重新赋值
-                templist.value[i].value.record=[]
-                for(let j in xresult[templist.value[i].value.key] as TypeProps){
-                    templist.value[i].value.record.push({key:j,value:(xresult as any)[templist.value[i].value.key][j]})
+                templist.value[i].value.record = []
+                for (let j in xresult[templist.value[i].value.key] as TypeProps) {
+                    templist.value[i].value.record.push({ key: j, value: (xresult as any)[templist.value[i].value.key][j] })
                 }
             }
         }
@@ -92,70 +92,69 @@ const emit = defineEmits(['update:renderData'])
 watch(
     () => x,
     (newVal: TypeProps) => {
-        if((JSON.stringify(newVal))==(JSON.stringify(props.renderData))){
+        if ((JSON.stringify(newVal)) == (JSON.stringify(props.renderData))) {
             return
         }
         emit('update:renderData', JSON.parse(JSON.stringify(newVal)))
-        
-    },
-    { deep: true }
-)
-const tempTemp=ref<Ref<record>[]>([])
-watch(
-    () => templist.value,
-    (newVal: Ref<record>[]) => {
-        
-        //阻止循环调用
-        if(templist.value.length==0){
-            return
-        }
-        if(JSON.stringify(templist.value)==JSON.stringify(tempTemp.value)){
-            return
-        }
-        let i=false;
-        templist.value.forEach((item,index)=>{
-            if(item.value.record.length>0){
-                i=true
-            }
-        })
-        if(!i)
-        {
-            return
-        }
-        for(let i of newVal){
-            //递归查找对应location和key的变量
-            const result=search(i.value.location,i.value.key,x)
-            
-            if(result==false){
-                continue
-            }
-            else{
-                const xresult=result as TypeProps
-                xresult[i.value.key]={}
-                for(let j of i.value.record){
-                    if(j.key==''){
-                        continue
-                    }
-                    (xresult[i.value.key] as any)[j.key]=j.value
-                }
-            }
-        }
-        tempTemp.value=JSON.parse(JSON.stringify(templist.value))
 
     },
     { deep: true }
 )
-const search=(location:TypeProps,key:string,total:TypeProps):boolean|TypeProps=>{
+const tempTemp = ref<Ref<record>[]>([])
+watch(
+    () => templist.value,
+    (newVal: Ref<record>[]) => {
+
+        //阻止循环调用
+        if (templist.value.length == 0) {
+            return
+        }
+        if (JSON.stringify(templist.value) == JSON.stringify(tempTemp.value)) {
+            return
+        }
+        let i = false;
+        templist.value.forEach((item, index) => {
+            if (item.value.record.length > 0) {
+                i = true
+            }
+        })
+        if (!i) {
+            return
+        }
+        for (let i of newVal) {
+            //递归查找对应location和key的变量
+            const result = search(i.value.location, i.value.key, x)
+
+            if (result == false) {
+                continue
+            }
+            else {
+                const xresult = result as TypeProps
+                xresult[i.value.key] = {}
+                for (let j of i.value.record) {
+                    if (j.key == '') {
+                        continue
+                    }
+                    (xresult[i.value.key] as any)[j.key] = j.value
+                }
+            }
+        }
+        tempTemp.value = JSON.parse(JSON.stringify(templist.value))
+
+    },
+    { deep: true }
+)
+const search = (location: TypeProps, key: string, total: TypeProps): boolean | TypeProps => {
     //递归查找对应location和key的变量
-    let t=0
+    let t = 0
     //递归
-    const keys=Object.keys(location)
-    if(location==total&&keys.includes(key)){
+    const keys = Object.keys(location)
+    if (location == total && keys.includes(key)) {
         return location
     }
-    while(t<keys.length){
-        if(isTypeProps(location[keys[t]])){
-            return search(location,key,location[keys[t]] as TypeProps)
+    while (t < keys.length) {
+        if (isTypeProps(location[keys[t]])) {
+            return search(location, key, location[keys[t]] as TypeProps)
         }
     }
     return false
@@ -168,6 +167,9 @@ interface record {
     location: TypeProps,
     key: string,
     record: keyValue[]
+}
+const append=(temp:any)=>{
+    return JSON.parse (JSON.stringify( (temp as Array<any>)[0]))
 }
 const inTempList = (key: string, props: TypeProps) => {
     let t = 0
@@ -200,7 +202,28 @@ const renderFn = (props: TypeProps) => {
         }
         //is array<string>
         else if (typeof Object.values(props)[t] === "object" && Array.isArray(Object.values(props)[t])) {
-            rend = <>{rend} <NFormItem label={splitUpper(temp)}><NDynamicInput value={props[temp] as Array<any>} onUpdate:value={(E: any) => props[temp] = E}></NDynamicInput></NFormItem></>
+            if ((Object.values(props)[t] as Array<any>).length > 0 && typeof (Object.values(props)[t] as Array<any>)[0] == 'object') {
+                const count = Object.keys((props[temp] as Array<any>)[0]).length
+                rend = <>{rend} <NFormItem label={splitUpper(temp)}><NDynamicInput on-create={()=>append(props[temp])} value={props[temp] as Array<any>} preset={typeof (props[temp] as Array<any>)[0] == 'object' ? undefined : 'pair'} min={1} onUpdate:value={(E: any) => props[temp] = E}>
+                    {{
+                        default: ({ value }: { value: any }) => (
+                            <NSpace wrap={false}>
+                                {Object.keys(value).map((key: string) => (
+                                    
+                                    <NInput
+                                        key={key}
+                                        value={value[key]}
+                                        onUpdate:value={(newValue: any) => value[key] = newValue}
+                                        placeholder={key}
+                                    ></NInput>
+                                ))}
+                            </NSpace>
+                        ),
+                    }}
+                </NDynamicInput></NFormItem></>
+            }
+            else
+                rend = <>{rend} <NFormItem label={splitUpper(temp)}><NDynamicInput value={props[temp] as Array<any>} onUpdate:value={(E: any) => props[temp] = E}></NDynamicInput></NFormItem></>
             t++
         }
         //is TypeProps
@@ -215,7 +238,7 @@ const renderFn = (props: TypeProps) => {
                     let s = 0
                     while (s < templist.value.length) {
                         if (templist.value[s].value.key == temp && templist.value[s].value.location == props) {
-                            rend = <>{rend}<NFormItem label={splitUpper(temp)}><NDynamicInput preset='pair' value={templist.value[s].value.record} onUpdate:value={(e: any) => templist.value[s].value.record = e}></NDynamicInput></NFormItem></>
+                            rend = <>{rend}<NFormItem label={splitUpper(temp)}><NDynamicInput preset={'pair'} value={templist.value[s].value.record} onUpdate:value={(e: any) => templist.value[s].value.record = e}></NDynamicInput></NFormItem></>
                             break
                         }
                         s++
