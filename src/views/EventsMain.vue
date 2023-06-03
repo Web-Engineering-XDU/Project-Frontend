@@ -8,7 +8,7 @@
         <n-divider  v-if="route.query.id==undefined"/>
         <n-data-table remote ref="table" :columns="columns" :data="data" :loading="loading" :pagination="pagination"
             :row-props="rowProps" :row-key="rowKey" @update:page="handlePageChange"></n-data-table>
-        <n-dropdown placement="bottom-start" trigger="manual" :x="x" :y="y" :options="options" v-if="false" :show="showDropdown"
+        <n-dropdown placement="bottom-start" trigger="manual" :x="x" :y="y" :options="options"  :show="showDropdown"
             :on-clickoutside="onClickoutside" @select="handleSelect" />
     </div>
 </template>
@@ -26,7 +26,7 @@ const showDropdown = ref(false)
 const loading = ref(true);
 const x = ref(0)
 const y = ref(0)
-const pointer = ref(0)
+const pointer = ref<Event>()
 const data = ref<Event[]>([]);
 const onClickoutside = () => {
     showDropdown.value = false
@@ -45,7 +45,7 @@ const rowProps = (row: Event) => {
             e.preventDefault()
             showDropdown.value = false
             nextTick().then(() => {
-                pointer.value = row.id
+                pointer.value = row
                 showDropdown.value = true
                 x.value = e.clientX
                 y.value = e.clientY
@@ -77,9 +77,10 @@ const columns: DataTableColumn[] = [
     {
         title: "Payload",
         key: "payload",
-        width: 100,
+        width: 90,
+        ellipsis: true,
         render: (rowData: any) => {
-            return <n-ellipsis>{rowData.jsonStr}</n-ellipsis>;
+            return <>{rowData.jsonStr}</>;
         },
     },
 
@@ -90,7 +91,7 @@ const handleSelect = (key: string) => {
 
             break
         case 'show':
-
+            router.push('/events/'+pointer.value?.id+'?srcId='+pointer.value?.srcAgentId)
             break
     }
     showDropdown.value = false
@@ -100,15 +101,7 @@ const options: Array<DropdownOption | DropdownDividerOption> = [
         label: 'Show',
         key: 'show',
     },
-    {
-        type: 'divider',
 
-        key: 'divider',
-    },
-    {
-        key: 'del',
-        label: () => <><n-text type='error'>Delete</n-text></>
-    }
 ]
 const query = (page: number, pageSize: number) => {
     return axios.get("/event", {

@@ -87,7 +87,7 @@ export interface Relations {
     srcs: number[]
 }
 export interface Event{
-    createdAt: string,
+    createAt: string,
     deleteAt: string,
     error: boolean,
     id: number,

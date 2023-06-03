@@ -35,7 +35,6 @@ const router = createRouter({
     },
     {
       path: '/agents',
-
       children: [
         {
           path: '',
@@ -71,6 +70,11 @@ const router = createRouter({
           path: '',
           name: 'events',
           component: () => import('../views/EventsMain.vue')
+        },
+        {
+          path: ':id',
+          name: 'eventdetail',
+          component: () => import('../views/EventDetail.vue')
         }
       ]
     }

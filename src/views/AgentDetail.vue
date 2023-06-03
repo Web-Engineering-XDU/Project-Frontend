@@ -2,7 +2,7 @@
   <div style="padding-top:20px">
     <n-config-provider :hljs="hljs">
       <n-skeleton v-if="loading" text style="width:200px" /> 
-      <n-page-header v-else :title="agent?.name + ' Details'" @back="$router.push('/agents')"></n-page-header>
+      <n-page-header v-else :title="agent?.name + ' Details'" @back="$router.back"></n-page-header>
       <n-list style="padding-top:20px">
         <n-list-item>
         <n-skeleton v-if="loading" text style="width:200px" /> 
@@ -31,7 +31,7 @@
         </n-list-item>
         <n-list-item>
           <n-skeleton v-if="loading" text style="width:300px;max-width:100%" /> 
-          <div v-else><span style="font-weight:800;padding-right:15px">Props:</span><n-code
+          <div v-else><span style="font-weight:800;padding-right:15px">Props:</span><n-code word-wrap
               :code="agent.propJsonStr != undefined ? JSON.stringify(JSON.parse(agent.propJsonStr), null, 2) : ''"
               language="json"></n-code></div>
         </n-list-item>
