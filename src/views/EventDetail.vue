@@ -15,7 +15,7 @@
                 </n-list-item>
                 <n-list-item>
                     <n-skeleton v-if="loading" text style="width:200px" />
-                    <div v-else><span style="font-weight:800;padding-right:15px">Src Agent:</span><n-a
+                    <div v-else><span style="font-weight:800;padding-right:15px">Source Agent:</span><n-a
                             @click="router.push('/agents?id=' + event.srcAgentId)">{{ event.srcAgentName }}</n-a></div>
                 </n-list-item>
                 <n-list-item>
