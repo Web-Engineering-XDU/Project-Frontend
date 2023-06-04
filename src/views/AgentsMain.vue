@@ -121,6 +121,8 @@ const pagination = reactive({
     return `Total is ${itemCount}.`;
   },
 });
+// @ts-ignore-next-line
+pagination.itemCount = 0;
 const rowKey = (rowData: Agent) => {
   return rowData.id;
 };

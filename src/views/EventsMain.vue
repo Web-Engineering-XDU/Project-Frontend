@@ -39,6 +39,8 @@ const pagination = reactive({
         return `Total is ${itemCount}.`;
     },
 });
+// @ts-ignore-next-line
+pagination.itemCount=0
 const rowProps = (row: Event) => {
     return {
         onContextmenu: (e: MouseEvent) => {
