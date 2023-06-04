@@ -298,6 +298,7 @@ function init<T extends number>(id: T): AgentNew<ScheduleAgent> | AgentNew<HttpA
           description: "",
           link: "",
           author: "",
+          created: "",
         },
       },
     });
@@ -375,21 +376,6 @@ if (props.mode == 'edit') {
   //把props.data按键值对赋值给agent
   Object.assign(agent, JSON.parse(JSON.stringify(props.data)));
   //把header和template放回对应临时变量
-  if (isHttpAgent(agent)) {
-    for (const key in agent.propJsonStr.header) {
-      tempHeader.value.push({
-        key: key,
-        value: agent.propJsonStr.header[key],
-      });
-    }
-    for (const key in agent.propJsonStr.template) {
-      tempTemplate.value.push({
-        key: key,
-        value: agent.propJsonStr.template[key],
-      });
-    }
-
-  }
 }
 
 watch(

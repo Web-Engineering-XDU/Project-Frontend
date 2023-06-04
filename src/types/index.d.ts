@@ -60,6 +60,7 @@ export interface RssAgent {
     link: string
     description: string
     author: string
+    created:string
   }
 }
 export interface selectors {
