@@ -104,16 +104,6 @@ const props = defineProps({
 });
 const syncAndShow = () => {
   //把未和agent同步的agent信息更新
-  if (isHttpAgent(agent)) {
-    agent.propJsonStr.header = {}
-    agent.propJsonStr.template = {}
-    tempHeader.value.forEach((item) => {
-      agent.propJsonStr.header[item.key] = item.value
-    })
-    tempTemplate.value.forEach((item) => {
-      agent.propJsonStr.template[item.key] = item.value
-    })
-  }
   show.value = true
 }
 
@@ -503,7 +493,9 @@ const initRelation = () => {
 initRelation()
 const save = async (): Promise<number | string> => {
   try {
-    await nameRef.value.validate();
+    await nameRef.value.validate().catch(() => {
+      return Promise.reject('Name cannot be empty');
+    });
     if (isScheduleAgent(agent)) {
       if (cronValidate(agent.propJsonStr.cron)) {
         const agentReal: AgentNew<string> = {
