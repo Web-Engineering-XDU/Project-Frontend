@@ -168,8 +168,8 @@ interface record {
     key: string,
     record: keyValue[]
 }
-const append=(temp:any)=>{
-    return JSON.parse (JSON.stringify( (temp as Array<any>)[0]))
+const append = (temp: any) => {
+    return JSON.parse(JSON.stringify((temp as Array<any>)[0]))
 }
 const inTempList = (key: string, props: TypeProps) => {
     let t = 0
@@ -188,12 +188,10 @@ const renderFn = (props: TypeProps) => {
         const temp = Object.keys(props)[t]
         if (typeof Object.values(props)[t] === 'string') {
             rend = <>{rend} <NFormItem label={splitUpper(temp)}><NInput value={props[temp] as string} onUpdate:value={(E: any) => props[temp] = E}></NInput></NFormItem></>
-
             t++
         }
         else if (typeof Object.values(props)[t] === "number") {
             rend = <>{rend} <NFormItem label={splitUpper(temp)}><NInputNumber value={props[temp] as number} onUpdate:value={(E: any) => props[temp] = E}></NInputNumber></NFormItem></>
-
             t++
         }
         else if (typeof Object.values(props)[t] === "boolean") {
@@ -203,13 +201,11 @@ const renderFn = (props: TypeProps) => {
         //is array<string>
         else if (typeof Object.values(props)[t] === "object" && Array.isArray(Object.values(props)[t])) {
             if ((Object.values(props)[t] as Array<any>).length > 0 && typeof (Object.values(props)[t] as Array<any>)[0] == 'object') {
-                const count = Object.keys((props[temp] as Array<any>)[0]).length
-                rend = <>{rend} <NFormItem label={splitUpper(temp)}><NDynamicInput on-create={()=>append(props[temp])} value={props[temp] as Array<any>} preset={typeof (props[temp] as Array<any>)[0] == 'object' ? undefined : 'pair'} min={1} onUpdate:value={(E: any) => props[temp] = E}>
+                rend = <>{rend} <NFormItem label={splitUpper(temp)}><NDynamicInput on-create={() => append(props[temp])} value={props[temp] as Array<any>} preset={typeof (props[temp] as Array<any>)[0] == 'object' ? undefined : 'pair'} min={1} onUpdate:value={(E: any) => props[temp] = E}>
                     {{
                         default: ({ value }: { value: any }) => (
                             <NSpace wrap={false}>
                                 {Object.keys(value).map((key: string) => (
-                                    
                                     <NInput
                                         key={key}
                                         value={value[key]}
@@ -254,7 +250,7 @@ const renderFn = (props: TypeProps) => {
         //is simpleObject
         else {
             //push error
-            new Error('props type error')
+            throw new Error('props type error')
         }
     }
     return rend
