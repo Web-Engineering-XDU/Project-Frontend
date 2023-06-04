@@ -62,7 +62,7 @@ const handleDryRun = () => {
         if (res.data.code == 200)
             dialog.info({
                 title: 'Dry Run Result',
-                content:()=><n-config-provider hljs={hljs}><NCode word-wrap language="json" code={JSON.stringify(res.data.result)}></NCode></n-config-provider>
+                content:()=><n-config-provider hljs={hljs}><NCode word-wrap language="json" code={JSON.stringify(res.data.result, null, 2)}></NCode></n-config-provider>
             })
         else
             message.error('Dry run failed:' + res.data.msg)
