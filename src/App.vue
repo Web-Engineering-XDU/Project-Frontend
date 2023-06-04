@@ -73,6 +73,7 @@ activeKey.value = window.location.pathname.split("/")[1];
 
 <template>
   <n-message-provider>
+    <n-dialog-provider>
     <n-layout class="out">
       <n-layout-header class="header">
         <div class="container">
@@ -165,7 +166,7 @@ activeKey.value = window.location.pathname.split("/")[1];
           >
         </div>
       </n-scrollbar>
-    </n-layout></n-message-provider
+    </n-layout></n-dialog-provider></n-message-provider
   >
 </template>
 
