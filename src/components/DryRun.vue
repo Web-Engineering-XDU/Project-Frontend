@@ -19,6 +19,8 @@ import { useMessage,useDialog } from 'naive-ui'
 import type { AxiosResponse } from "axios";
 import type { Response } from "@/types";
 import { NCode } from "naive-ui";
+import json from 'highlight.js/lib/languages/json'
+hljs.registerLanguage('json', json)
 const axios = useCounterStore().Axios
 const showModal = ref(false)
 const message = useMessage()

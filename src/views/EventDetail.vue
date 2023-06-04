@@ -36,6 +36,8 @@ import { computed, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import type { AxiosResponse } from 'axios';
 import { useMessage } from 'naive-ui';
+import json from 'highlight.js/lib/languages/json'
+hljs.registerLanguage('json', json)
 const router=useRouter();
 const axios = useCounterStore().Axios;
 const loading = ref(true);
