@@ -91,7 +91,7 @@ const handleSelect = (key: string) => {
 
             break
         case 'show':
-            router.push('/events/'+pointer.value?.id+'?srcId='+pointer.value?.srcAgentId)
+            router.push('/events/'+pointer.value?.id)
             break
     }
     showDropdown.value = false
