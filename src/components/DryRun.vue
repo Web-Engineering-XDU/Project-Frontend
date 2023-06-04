@@ -58,7 +58,6 @@ const handleDryRun = () => {
         agentTypeId: props.agentInfo.typeId,
         event: obj
     }).then((res) => {
-        console.log(res.data.result)
         if (res.data.code == 200)
             dialog.info({
                 title: 'Dry Run Result',

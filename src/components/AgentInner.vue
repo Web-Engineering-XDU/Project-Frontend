@@ -640,7 +640,7 @@ const saveWrapper = () => {
   }).catch((resxx) => { resxx!=''&&resxx!=undefined?message.error(resxx):null });
 }
 watch(()=>agent.typeId,()=>{
-  console.log(1)
+  
   showIn.value=false
   nextTick().then(()=>{
     showIn.value=true
