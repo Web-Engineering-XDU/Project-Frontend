@@ -1,6 +1,6 @@
 <template>
     <div class="about">
-        <n-h1>Modify a {{ agent?.typeId==1?'Schedule Agent':'Http Agent' }}</n-h1>
+        <n-h1>Modify a {{ agent?.typeId==1?'Schedule Agent':agent?.typeId==2?'Http Agent': 'Rss Agent' }}</n-h1>
         <n-divider />
     <div class="form-box">
       <div style="width: 100%">
