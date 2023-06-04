@@ -530,20 +530,10 @@ const save = async (): Promise<number | string> => {
         return Promise.reject();
       }
     } else if (isHttpAgent(agent)) {
-      if(agent.propJsonStr.urls.length==0){
+      if(agent.propJsonStr.urls.length==0||agent.propJsonStr.urls[0]==''){
         message.error('Urls can not be empty')
         return Promise.reject()
       }
-      agent.propJsonStr.header = {};
-      agent.propJsonStr.template = {};
-      tempHeader.value.forEach((item) => {
-        if (item.key !== '')
-          agent.propJsonStr.header[item.key] = item.value;
-      });
-      tempTemplate.value.forEach((item) => {
-        if (item.key !== '')
-          agent.propJsonStr.template[item.key] = item.value;
-      });
 
       const agentReal: AgentNew<string> = {
         name: agent.name,
