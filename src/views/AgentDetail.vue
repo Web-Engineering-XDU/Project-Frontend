@@ -25,6 +25,10 @@
           <n-skeleton v-if="loading" text style="width:300px;max-width:100%" /> 
           <div v-else><span style="font-weight:800;padding-right:15px">Description:</span>{{ agent.description }}</div>
         </n-list-item>
+        <n-list-item v-if="agent.typeId==4">
+          <n-skeleton v-if="loading" text style="width:200px" /> 
+          <div v-else><span style="font-weight:800;padding-right:15px">RSS address:</span><n-a @click="go">{{  'https://spm.guchen.work:8080/static/rss/'+agent.id+'.xml' }}</n-a></div>
+        </n-list-item>
         <n-list-item>
           <n-skeleton v-if="loading" text style="width:200px" /> 
           <div v-else><span style="font-weight:800;padding-right:15px">Events created:</span><n-a @click="router.push('/events?id='+route.params.id+'&name='+agent.name)">{{  count }}</n-a></div>
@@ -59,6 +63,9 @@ const axios = useCounterStore().Axios
 const route = useRoute()
 const agent = ref({} as Agent)
 const count=ref(0)
+const go=()=>{
+  window.open('https://spm.guchen.work:8080/static/rss/'+agent.value.id+'.xml')
+}
 axios.get('/agent', { params: { id: route.params.id,page:1,number:1 } }).then((res: AxiosResponse<Response<Agent>>) => {
   if(res.data.result.count==0){
     message.error('Agent Not Found')
