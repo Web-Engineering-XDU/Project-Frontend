@@ -225,7 +225,7 @@ activeKey.value = window.location.pathname.split("/")[1];
   justify-content: center;
 }
 .content .inner {
-  width: var(--width);
+  width: calc(var(--width) - 48px);
   max-width: 1500px;
 }
 .right-box {
