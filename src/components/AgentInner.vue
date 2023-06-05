@@ -520,7 +520,10 @@ const save = async (): Promise<number | string> => {
         message.error('Urls can not be empty')
         return Promise.reject()
       }
-
+      const tempA=agent.propJsonStr
+      if(agent.propJsonStr.selectors[0].varName==''&&agent.propJsonStr.selectors[0].selectorType==''&&agent.propJsonStr.selectors[0].selectorContent==''){
+        tempA.selectors=[]
+      }
       const agentReal: AgentNew<string> = {
         name: agent.name,
         enable: agent.enable,
@@ -528,7 +531,7 @@ const save = async (): Promise<number | string> => {
         description: agent.description,
         eventForever: agent.eventForever,
         eventMaxAge: agent.eventMaxAge,
-        propJsonStr: JSON.stringify(agent.propJsonStr),
+        propJsonStr: JSON.stringify(tempA),
       };
 
       if (props.mode === 'add') {
