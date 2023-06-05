@@ -53,9 +53,13 @@ const handleDryRun = () => {
         if ((element as any).key != '' && (element as any).value != '')
             obj[(element as any).key!] = (element as any).value
     }
+    const tempAgent=JSON.parse(JSON.stringify(props.agentInfo))
+    if(tempAgent.propJsonStr.selectors[0].varName==''&&tempAgent.propJsonStr.selectors[0].selectorType==''&&tempAgent.propJsonStr.selectors[0].selectorContent==''){
+        tempAgent.propJsonStr.selectors=[]
+      }
     axios.post('/agent/dry-run', {
-        agentPropJsonStr: typeof props.agentInfo.propJsonStr == 'string' ? props.agentInfo.propJsonStr : JSON.stringify(props.agentInfo.propJsonStr),
-        agentTypeId: props.agentInfo.typeId,
+        agentPropJsonStr: typeof tempAgent.propJsonStr == 'string' ? tempAgent.propJsonStr : JSON.stringify(tempAgent.propJsonStr),
+        agentTypeId: tempAgent.typeId,
         event: obj
     }).then((res) => {
         if (res.data.code == 200)

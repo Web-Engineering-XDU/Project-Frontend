@@ -625,6 +625,10 @@ watch(()=>agent.typeId,()=>{
     showIn.value=true
   })
 })
+watch(()=>props.data,(val)=>{
+    //把props.data按键值对赋值给agent
+    Object.assign(agent, JSON.parse(JSON.stringify(val)));
+},{deep:true})
 watch(relation, (val) => {
 
 }, { deep: true })
