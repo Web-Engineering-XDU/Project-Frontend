@@ -15,16 +15,12 @@
 import { ref, watch } from "vue";
 import hljs from 'highlight.js';
 import { useCounterStore } from "@/stores/counter";
-import { useMessage,useDialog } from 'naive-ui'
-import type { AxiosResponse } from "axios";
-import type { Response } from "@/types";
-import { NCode } from "naive-ui";
+import { useMessage,useDialog, NCode } from 'naive-ui'
 import json from 'highlight.js/lib/languages/json'
 hljs.registerLanguage('json', json)
 const axios = useCounterStore().Axios
 const showModal = ref(false)
 const message = useMessage()
-const showModalRe = ref(false)
 const dialog = useDialog()
 const props = defineProps({
     agentInfo: {
@@ -40,14 +36,12 @@ const emitUpdateShow = () => {
 }
 watch(() => props.show, (val) => {
     showModal.value = val
-
 })
 watch(showModal, (val) => {
     if (!val)
         emitUpdateShow()
 })
 const handleDryRun = () => {
-    //转eProps为对象
     const obj: any = {}
     for (const element of eProps.value) {
         if ((element as any).key != '' && (element as any).value != '')
